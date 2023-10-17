@@ -16,21 +16,12 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        # cache: pip
-        # cache-dependency-path: '**/setup.py'
+        cache: pip
+        # note: we don't use `cache: poetry` here because poetry.lock is not
+        # committed to the repo
     - name: Install poetry
       run: |
-        pip install -U poetry
-    - name: Setup local venv for caching
-      run: |
-        poetry config virtualenvs.create true --local
-        poetry config virtualenvs.in-project true --local
-    - uses: actions/cache@v3
-      name: Cache the venv with dependencies based on poetry.lock checksum
-      if: hashFiles('poetry.lock')
-      with:
-        path: ./.venv
-        key: venv-${{ hashFiles('poetry.lock') }}
+        pipx install poetry
     - name: Install dependencies
       run: poetry install
     - name: Run tests
