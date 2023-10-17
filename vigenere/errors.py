@@ -4,3 +4,7 @@ class Error(Exception):
 
 class CipherError(Error):
     pass
+
+
+class CLIError(Error):
+    pass

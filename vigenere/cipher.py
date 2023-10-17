@@ -1,7 +1,7 @@
-from getpass import getpass
 from typing import Optional, TextIO
 
-from .errors import CipherError
+from .errors import CipherError, CLIError
+from .pwinput import pwinput
 
 
 ALPHABET_PRINTABLE = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"  # noqa: E501
@@ -14,7 +14,7 @@ class Cipher():
         self,
         key: Optional[str] = None,
         key_file: Optional[TextIO] = None,
-        allow_interactive: bool = False,
+        batch: bool = False,
     ):
         if key_file and key:
             raise ValueError("Cannot pass both key and key_file")
@@ -22,7 +22,10 @@ class Cipher():
         if key_file:
             key = key_file.read()
         elif key is None:
-            key = getpass("Key: ")
+            if batch:
+                raise CLIError("Must provide key")
+            else:
+                key = pwinput("Key: ")
 
         if not key:
             raise ValueError("Empty key")
