@@ -1,0 +1,37 @@
+name: Test
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        # cache: pip
+        # cache-dependency-path: '**/setup.py'
+    - name: Install poetry
+      run: |
+        pip install -U poetry
+    - name: Setup local venv for caching
+      run: |
+        poetry config virtualenvs.create true --local
+        poetry config virtualenvs.in-project true --local
+    - uses: actions/cache@v3
+      name: Cache the venv with dependencies based on poetry.lock checksum
+      if: hashFiles('poetry.lock')
+      with:
+        path: ./.venv
+        key: venv-${{ hashFiles('poetry.lock') }}
+    - name: Install dependencies
+      run: poetry install
+    - name: Run tests
+      run: poetry run pytest -v
