@@ -1,3 +1,4 @@
+import secrets
 from typing import Optional, TextIO
 
 from .errors import CipherError, CLIError
@@ -14,6 +15,7 @@ class Cipher():
         self,
         key: Optional[str] = None,
         key_file: Optional[TextIO] = None,
+        generate_key: bool = False,
         batch: bool = False,
     ):
         if key_file and key:
@@ -116,3 +118,17 @@ class Cipher():
             output += o_chr
 
         return output
+
+
+def generate_key_printable(length: int) -> str:
+    """
+    Generate a key of printable chars, using the `secrets` module CSPRNG.
+    """
+    return generate_key(length=length, alphabet=ALPHABET_PRINTABLE)
+
+
+def generate_key(length: int, alphabet: str) -> str:
+    """
+    Generate a key from the given alphabet, using the `secrets` module CSPRNG.
+    """
+    return ''.join(secrets.choice(alphabet) for i in range(length))

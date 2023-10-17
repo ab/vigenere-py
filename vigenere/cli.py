@@ -3,7 +3,7 @@ from typing import Optional, TextIO
 
 import click
 
-from .cipher import Cipher
+from .cipher import Cipher, generate_key_printable
 
 # make help available at -h as well as default --help
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -14,15 +14,14 @@ ALIASES = {
     "decrypt": "dec",
     "e": "enc",
     "encrypt": "enc",
+    "genkey": "keygen",
 }
 
 
 class AliasedGroup(click.Group):
     def get_command(self, ctx, cmd_name):
-        try:
-            cmd_name = ALIASES[cmd_name].name
-        except KeyError:
-            pass
+        if cmd_name in ALIASES:
+            cmd_name = ALIASES[cmd_name]
         return super().get_command(ctx, cmd_name)
 
 
@@ -132,9 +131,41 @@ def decrypt(
 
     c = Cipher(key_file=key_file, batch=batch)
 
+    if input.isatty():
+        click.echo("Enter ciphertext...", err=True)
+
     plaintext = c.decrypt(input.read())
 
     if output:
         output.write(plaintext)
     else:
+        if input.isatty():
+            click.echo("Plaintext:", err=True)
         click.echo(plaintext, nl=False)
+
+
+@cli.command()
+@click.argument("length", type=int)
+@click.option(
+    "-o",
+    "--output",
+    help="Write key to given file",
+    type=click.File("w")
+)
+def keygen(
+    length: int,
+    output: Optional[TextIO],
+) -> None:
+    """
+    Generate a random key, suitable for use as a one time pad.
+    """
+
+    key = generate_key_printable(length=length)
+    if output:
+        output.write(key)
+    else:
+        ansi_invert_spaces = sys.stdout.isatty()
+        if ansi_invert_spaces:
+            key = key.replace(" ", "\033[7m \033[27m")
+
+        click.echo(key)
