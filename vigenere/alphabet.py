@@ -13,7 +13,7 @@ class Alphabet:
 
 
 ALPHABET_PRINTABLE = Alphabet(
-    chars=" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",
+    chars=" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",  # noqa: E501
     passthrough={"\t", "\n", "\v", "\f", "\r"},
 )
 

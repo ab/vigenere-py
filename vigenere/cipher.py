@@ -6,7 +6,7 @@ from .errors import CipherError, CLIError
 from .pwinput import pwinput
 
 
-class Cipher():
+class Cipher:
     def __init__(
         self,
         key: Optional[str] = None,
@@ -45,7 +45,6 @@ class Cipher():
         iter_key = iter(self.key)
 
         for c, k in zip(iter_in, iter_key):
-
             # pass through certain plaintext without consuming key
             while c in self.alphabet.passthrough:
                 output += c
@@ -57,7 +56,6 @@ class Cipher():
             try:
                 c_int = self.alphabet.chars_dict[c]
             except KeyError:
-
                 raise CipherError(f"Invalid character in plaintext: {c!r}")
 
             try:
@@ -85,7 +83,6 @@ class Cipher():
         iter_key = iter(self.key)
 
         for c, k in zip(iter_in, iter_key):
-
             # pass through certain text without consuming key
             while c in self.alphabet.passthrough:
                 output += c
@@ -97,7 +94,6 @@ class Cipher():
             try:
                 c_int = self.alphabet.chars_dict[c]
             except KeyError:
-
                 raise CipherError(f"Invalid character in ciphertext: {c!r}")
 
             try:
@@ -117,14 +113,11 @@ def generate_key_alphabet_label(length: int, alphabet_name: str) -> str:
     """
     Generate a key from the given alphabet, using the `secrets` module CSPRNG.
     """
-    return generate_key(
-        length=length,
-        chars=get_alphabet(name=alphabet_name).chars
-    )
+    return generate_key(length=length, chars=get_alphabet(name=alphabet_name).chars)
 
 
 def generate_key(length: int, chars: str) -> str:
     """
     Generate a key from the given alphabet, using the `secrets` module CSPRNG.
     """
-    return ''.join(secrets.choice(chars) for i in range(length))
+    return "".join(secrets.choice(chars) for i in range(length))

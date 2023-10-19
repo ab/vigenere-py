@@ -30,7 +30,7 @@ import sys
 from typing import List
 
 
-def pwinput(prompt: str = 'Password: ', mask: str = '•') -> str:
+def pwinput(prompt: str = "Password: ", mask: str = "•") -> str:
     """
     Like getpass.getpass(), but echo the mask character to stdout with each
     keystroke.
@@ -38,20 +38,19 @@ def pwinput(prompt: str = 'Password: ', mask: str = '•') -> str:
 
     if not isinstance(prompt, str):
         raise TypeError(
-            'prompt argument must be a str, not %s' % (type(prompt).__name__)
+            "prompt argument must be a str, not %s" % (type(prompt).__name__)
         )
     if not isinstance(mask, str):
-        raise TypeError(
-            'mask argument must be a str, not %s' % (type(prompt).__name__)
-        )
+        raise TypeError("mask argument must be a str, not %s" % (type(prompt).__name__))
     if len(mask) > 1:
-        raise ValueError('mask argument must be a zero- or one-character str')
+        raise ValueError("mask argument must be a zero- or one-character str")
 
-    if mask == '' or sys.stdin is not sys.__stdin__ or not sys.stdin.isatty():
+    if mask == "" or sys.stdin is not sys.__stdin__ or not sys.stdin.isatty():
         # Just use getpass if a mask is not needed.
         # Note that getpass will attempt to read/write directly from /dev/tty,
         # so if stdin is a pipe, getpass may still read from the terminal.
         import getpass
+
         return getpass.getpass(prompt)
 
     enteredPassword: List[str] = []
@@ -64,13 +63,13 @@ def pwinput(prompt: str = 'Password: ', mask: str = '•') -> str:
 
         if key == 13 or key == 4:
             # enter key or ^D pressed
-            sys.stdout.write('\n')
-            return ''.join(enteredPassword)
+            sys.stdout.write("\n")
+            return "".join(enteredPassword)
         elif key in (8, 127):  # Backspace/Del key erases previous output.
             if len(enteredPassword) > 0:
                 # Erase previous character
                 # Print \b to move cursor, overwrite with space, then \b again
-                sys.stdout.write('\b \b')
+                sys.stdout.write("\b \b")
                 sys.stdout.flush()
                 enteredPassword = enteredPassword[:-1]
         elif 0 <= key <= 31:
@@ -183,7 +182,7 @@ def termios_getch():
     return ch
 
 
-if sys.platform == 'win32':
+if sys.platform == "win32":
     # Windows
     import msvcrt
 

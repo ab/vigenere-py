@@ -6,7 +6,7 @@ import click
 from .cipher import Cipher, generate_key_alphabet_label
 
 # make help available at -h as well as default --help
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 ALIASES = {
@@ -33,25 +33,9 @@ def cli() -> None:
 
 @cli.command(name="enc")
 @click.argument("input", type=click.File("r"), required=False)
-@click.option(
-    "-o",
-    "--output",
-    help="Output file",
-    type=click.File("w")
-)
-@click.option(
-    "-k",
-    "--key-file",
-    help="Key file",
-    type=click.File("r")
-)
-@click.option(
-    "-b",
-    "--batch",
-    help="Non-interactive mode",
-    is_flag=True,
-    default=False
-)
+@click.option("-o", "--output", help="Output file", type=click.File("w"))
+@click.option("-k", "--key-file", help="Key file", type=click.File("r"))
+@click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
 def encrypt(
     input: Optional[TextIO],
     key_file: Optional[TextIO],
@@ -99,25 +83,9 @@ def encrypt(
 
 @cli.command(name="dec")
 @click.argument("input", type=click.File("r"), required=False)
-@click.option(
-    "-o",
-    "--output",
-    help="Output file",
-    type=click.File("w")
-)
-@click.option(
-    "-k",
-    "--key-file",
-    help="Key file",
-    type=click.File("r")
-)
-@click.option(
-    "-b",
-    "--batch",
-    help="Non-interactive mode",
-    is_flag=True,
-    default=False
-)
+@click.option("-o", "--output", help="Output file", type=click.File("w"))
+@click.option("-k", "--key-file", help="Key file", type=click.File("r"))
+@click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
 def decrypt(
     input: Optional[TextIO],
     key_file: Optional[TextIO],
@@ -146,12 +114,7 @@ def decrypt(
 
 @cli.command()
 @click.argument("length", type=int)
-@click.option(
-    "-o",
-    "--output",
-    help="Write key to given file",
-    type=click.File("w")
-)
+@click.option("-o", "--output", help="Write key to given file", type=click.File("w"))
 def keygen(
     length: int,
     output: Optional[TextIO],
