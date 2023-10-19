@@ -25,8 +25,9 @@ python = "^3.8"
 click = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4.2"
 ipdb = "^0.13.13"
+mypy = "^1.6.1"
+pytest = "^7.4.2"
 
 [build-system]
 requires = ["poetry-core"]

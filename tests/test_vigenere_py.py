@@ -2,7 +2,7 @@ from click.testing import CliRunner
 from vigenere.cli import cli
 
 
-def test_version():
+def test_version() -> None:
     runner = CliRunner()
     with runner.isolated_filesystem():
         result = runner.invoke(cli, ["--version"], catch_exceptions=False)

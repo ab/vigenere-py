@@ -19,7 +19,8 @@ ALIASES = {
 
 
 class AliasedGroup(click.Group):
-    def get_command(self, ctx, cmd_name):
+    # @typing.override  # python 3.12+
+    def get_command(self, ctx: click.Context, cmd_name: str) -> Optional[click.Command]:
         if cmd_name in ALIASES:
             cmd_name = ALIASES[cmd_name]
         return super().get_command(ctx, cmd_name)
