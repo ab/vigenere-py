@@ -21,8 +21,7 @@ jobs:
         # note: we don't use `cache: poetry` here because poetry.lock is not
         # committed to the repo
     - name: Install poetry
-      run: |
-        pipx install poetry
+      run: pipx install poetry
     - name: Install dependencies
       run: poetry install
     - name: Lint
