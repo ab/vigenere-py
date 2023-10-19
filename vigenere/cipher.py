@@ -1,13 +1,9 @@
 import secrets
 from typing import Optional, TextIO
 
+from .alphabet import get_alphabet
 from .errors import CipherError, CLIError
 from .pwinput import pwinput
-
-
-ALPHABET_PRINTABLE = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"  # noqa: E501
-
-PRINTABLE_PASSTHROUGH = {"\r", "\n", "\t"}
 
 
 class Cipher():
@@ -15,8 +11,8 @@ class Cipher():
         self,
         key: Optional[str] = None,
         key_file: Optional[TextIO] = None,
-        generate_key: bool = False,
         batch: bool = False,
+        alphabet_name: str = "printable",
     ):
         if key_file and key:
             raise ValueError("Cannot pass both key and key_file")
@@ -34,12 +30,9 @@ class Cipher():
 
         self.key = key
 
-        self.alphabet = ALPHABET_PRINTABLE
-        self.alphabet_dict = {v: i for i, v in enumerate(self.alphabet)}
+        self.alphabet = get_alphabet(name=alphabet_name)
 
-        self.passthrough = PRINTABLE_PASSTHROUGH
-
-    def encrypt(self, text: str):
+    def encrypt(self, text: str) -> str:
         if text is None:
             raise ValueError("Must provide text")
 
@@ -54,7 +47,7 @@ class Cipher():
         for c, k in zip(iter_in, iter_key):
 
             # pass through certain plaintext without consuming key
-            while c in self.passthrough:
+            while c in self.alphabet.passthrough:
                 output += c
                 try:
                     c = next(iter_in)
@@ -62,24 +55,24 @@ class Cipher():
                     return output
 
             try:
-                c_int = self.alphabet_dict[c]
+                c_int = self.alphabet.chars_dict[c]
             except KeyError:
 
                 raise CipherError(f"Invalid character in plaintext: {c!r}")
 
             try:
-                k_int = self.alphabet_dict[k]
+                k_int = self.alphabet.chars_dict[k]
             except KeyError:
                 raise CipherError(f"Invalid character in key: {k!r}")
 
-            o_int = (c_int + k_int) % len(self.alphabet)
-            o_chr = self.alphabet[o_int]
+            o_int = (c_int + k_int) % len(self.alphabet.chars)
+            o_chr = self.alphabet.chars[o_int]
 
             output += o_chr
 
         return output
 
-    def decrypt(self, text: str):
+    def decrypt(self, text: str) -> str:
         if text is None:
             raise ValueError("Must provide text")
 
@@ -94,7 +87,7 @@ class Cipher():
         for c, k in zip(iter_in, iter_key):
 
             # pass through certain text without consuming key
-            while c in self.passthrough:
+            while c in self.alphabet.passthrough:
                 output += c
                 try:
                     c = next(iter_in)
@@ -102,33 +95,36 @@ class Cipher():
                     return output
 
             try:
-                c_int = self.alphabet_dict[c]
+                c_int = self.alphabet.chars_dict[c]
             except KeyError:
 
                 raise CipherError(f"Invalid character in ciphertext: {c!r}")
 
             try:
-                k_int = self.alphabet_dict[k]
+                k_int = self.alphabet.chars_dict[k]
             except KeyError:
                 raise CipherError(f"Invalid character in key: {k!r}")
 
-            o_int = (c_int - k_int) % len(self.alphabet)
-            o_chr = self.alphabet[o_int]
+            o_int = (c_int - k_int) % len(self.alphabet.chars)
+            o_chr = self.alphabet.chars[o_int]
 
             output += o_chr
 
         return output
 
 
-def generate_key_printable(length: int) -> str:
-    """
-    Generate a key of printable chars, using the `secrets` module CSPRNG.
-    """
-    return generate_key(length=length, alphabet=ALPHABET_PRINTABLE)
-
-
-def generate_key(length: int, alphabet: str) -> str:
+def generate_key_alphabet_label(length: int, alphabet_name: str) -> str:
     """
     Generate a key from the given alphabet, using the `secrets` module CSPRNG.
     """
-    return ''.join(secrets.choice(alphabet) for i in range(length))
+    return generate_key(
+        length=length,
+        chars=get_alphabet(name=alphabet_name).chars
+    )
+
+
+def generate_key(length: int, chars: str) -> str:
+    """
+    Generate a key from the given alphabet, using the `secrets` module CSPRNG.
+    """
+    return ''.join(secrets.choice(chars) for i in range(length))

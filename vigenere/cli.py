@@ -3,7 +3,7 @@ from typing import Optional, TextIO
 
 import click
 
-from .cipher import Cipher, generate_key_printable
+from .cipher import Cipher, generate_key_alphabet_label
 
 # make help available at -h as well as default --help
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -27,7 +27,7 @@ class AliasedGroup(click.Group):
 
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
 @click.version_option(package_name="vigenere-py")
-def cli():
+def cli() -> None:
     """Vigenère cipher encryption for Python"""
 
 
@@ -57,7 +57,7 @@ def encrypt(
     key_file: Optional[TextIO],
     output: Optional[TextIO],
     batch: bool,
-):
+) -> None:
     """
     Encrypt text with a Vigenère cipher.
 
@@ -123,7 +123,7 @@ def decrypt(
     key_file: Optional[TextIO],
     output: Optional[TextIO],
     batch: bool,
-):
+) -> None:
     """Decrypt Vigenère ciphertext"""
 
     if not input:
@@ -160,7 +160,7 @@ def keygen(
     Generate a random key, suitable for use as a one time pad.
     """
 
-    key = generate_key_printable(length=length)
+    key = generate_key_alphabet_label(length=length, alphabet_name="printable")
     if output:
         output.write(key)
     else:
