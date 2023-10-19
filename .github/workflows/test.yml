@@ -12,21 +12,27 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: pip
-        # note: we don't use `cache: poetry` here because poetry.lock is not
-        # committed to the repo
-    - name: Install poetry
-      run: pipx install poetry
-    - name: Install dependencies
-      run: poetry install
-    - name: Lint
-      run: poetry run black --check --diff .
-    - name: Run mypy
-      run: poetry run mypy .
-    - name: Run tests
-      run: poetry run pytest -v
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          # note: we don't use `cache: poetry` here because poetry.lock is not
+          # committed to the repo
+          #
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Lint
+        run: poetry run black --check --diff .
+
+      - name: Run mypy
+        run: poetry run mypy .
+
+      - name: Run tests
+        run: poetry run pytest -v

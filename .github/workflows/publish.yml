@@ -1,8 +1,9 @@
 name: Publish Python Package
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   test:
@@ -13,20 +14,40 @@ jobs:
     needs: [test]
     environment: publish
     permissions:
-      # IMPORTANT: this permission is mandatory for trusted publishing
+      # Required for PyPI publish via OIDC
       id-token: write
+
+      # required to create the release
+      contents: write
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
           cache: pip
+
       - name: Install poetry
         run: pipx install poetry
+
       - name: Install dependencies
         run: poetry install
+
       - name: Build package
         run: poetry build
+
+      # - name: Check Version
+      #   id: check-version
+      #   run: |
+      #     [[ "$(poetry version --short)" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || echo prerelease=true >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*"
+          # prerelease: steps.check-version.outputs.prerelease == 'true'
+
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
