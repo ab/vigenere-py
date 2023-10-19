@@ -29,6 +29,10 @@ You can also use:
 
     python -m vigenere --help
 
+### Bash shell completions
+
+    _VIGENERE_COMPLETE=bash_source vigenere > ~/.local/share/bash-completion/completions/vigenere
+
 ## Development
 
 To contribute to this tool, first checkout the code.
@@ -54,4 +58,16 @@ But if you don't want to use pipx, there are other installation instructions her
 
 ### Running tests
 
+    poetry run mypy .
     poetry run pytest -v
+
+Or, you can run these as a `poe` task:
+
+
+Install poe:
+
+    pipx install poethepoet
+
+Run tests:
+
+    poe test

@@ -29,6 +29,17 @@ ipdb = "^0.13.13"
 mypy = "^1.6.1"
 pytest = "^7.4.2"
 
+[tool.poe.tasks]
+all = ["all-tests"]
+all-tests = ["black-check", "typecheck", "test"]
+black-check = "black --check --diff ."
+lint = "black"
+test = "pytest -v"
+typecheck = "mypy ."
+
+[tool.mypy]
+strict = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

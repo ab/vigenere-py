@@ -3,6 +3,7 @@ name: Test
 on:
   push:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   test:
@@ -24,5 +25,9 @@ jobs:
         pipx install poetry
     - name: Install dependencies
       run: poetry install
+    - name: Lint
+      run: poetry run black --check --diff .
+    - name: Run mypy
+      run: poetry run mypy .
     - name: Run tests
       run: poetry run pytest -v
