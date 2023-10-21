@@ -1,8 +1,10 @@
+import csv
 import sys
 from typing import Optional, TextIO
 
 import click
 
+from .alphabet import ALPHABETS, get_alphabet
 from .cipher import Cipher, generate_key_alphabet_label
 
 # make help available at -h as well as default --help
@@ -10,6 +12,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 ALIASES = {
+    "alpha": "alphabet",
     "d": "dec",
     "decrypt": "dec",
     "e": "enc",
@@ -133,3 +136,43 @@ def keygen(
             key = key.replace(" ", "\033[7m \033[27m")
 
         click.echo(key)
+
+
+@cli.command()
+@click.argument("label", required=False)
+@click.option("-t", "--tab", is_flag=True, help="Tab delimit output")
+@click.option("-c", "--csv", "csv_out", is_flag=True, help="CSV format output")
+def alphabet(
+    label: Optional[str] = None,
+    csv_out: bool = False,
+    tab: bool = False,
+) -> None:
+    """
+    Print characters in the given alphabet.
+
+    Or, if no label is given, list known alphabet names.
+    """
+
+    if not label:
+        click.echo("Known alphabets: \n  - " + "\n  - ".join(ALPHABETS.keys()))
+        return
+
+    try:
+        alpha = get_alphabet(label)
+    except KeyError:
+        click.secho("Alphabet not found: " + label, fg="red")
+        click.echo("Known alphabets: \n  - " + "\n  - ".join(ALPHABETS.keys()))
+        sys.exit(1)
+
+    chars = alpha.chars
+
+    if csv_out:
+        row = list(chars)
+        writer = csv.writer(sys.stdout)
+        writer.writerow(row)
+        return
+
+    if tab:
+        chars = "\t".join(chars)
+
+    click.echo(chars)
