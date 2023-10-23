@@ -3,6 +3,7 @@ import sys
 from typing import Optional, TextIO
 
 import click
+import strictyaml
 
 from .alphabet import ALPHABETS, get_alphabet
 from .cipher import Cipher, generate_key_alphabet_label
@@ -35,15 +36,25 @@ def cli() -> None:
     """Vigenère cipher encryption for Python"""
 
 
+_alphabet_option = click.option(
+    "-a",
+    "--alphabet",
+    type=click.Choice(list(ALPHABETS.keys())),
+    default="printable",
+)
+
+
 @cli.command(name="enc")
 @click.argument("input", type=click.File("r"), required=False)
 @click.option("-o", "--output", help="Output file", type=click.File("w"))
 @click.option("-k", "--key-file", help="Key file", type=click.File("r"))
 @click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
+@_alphabet_option
 def encrypt(
     input: Optional[TextIO],
     key_file: Optional[TextIO],
     output: Optional[TextIO],
+    alphabet: str,
     batch: bool,
 ) -> None:
     """
@@ -66,7 +77,7 @@ def encrypt(
     else:
         ansi_invert_spaces = sys.stdout.isatty()
 
-    c = Cipher(key_file=key_file, batch=batch)
+    c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
 
     if input.isatty():
         click.echo("Text to encrypt:", err=True)
@@ -90,10 +101,12 @@ def encrypt(
 @click.option("-o", "--output", help="Output file", type=click.File("w"))
 @click.option("-k", "--key-file", help="Key file", type=click.File("r"))
 @click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
+@_alphabet_option
 def decrypt(
     input: Optional[TextIO],
     key_file: Optional[TextIO],
     output: Optional[TextIO],
+    alphabet: str,
     batch: bool,
 ) -> None:
     """Decrypt Vigenère ciphertext"""
@@ -101,7 +114,7 @@ def decrypt(
     if not input:
         input = sys.stdin
 
-    c = Cipher(key_file=key_file, batch=batch)
+    c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
 
     if input.isatty():
         click.echo("Enter ciphertext...", err=True)
@@ -118,24 +131,42 @@ def decrypt(
 
 @cli.command()
 @click.argument("length", type=int)
+@_alphabet_option
 @click.option("-o", "--output", help="Write key to given file", type=click.File("w"))
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="plain",
+    type=click.Choice(["plain", "yaml"]),
+)
 def keygen(
     length: int,
     output: Optional[TextIO],
+    alphabet: str,
+    format: str,
 ) -> None:
     """
     Generate a random key, suitable for use as a one time pad.
     """
 
-    key = generate_key_alphabet_label(length=length, alphabet_name="printable")
+    key = generate_key_alphabet_label(length=length, alphabet_name=alphabet)
+
+    if format == "yaml":
+        key = strictyaml.as_document({"key": key}).as_yaml()
+    elif format == "plain":
+        pass
+    else:
+        raise ValueError("Invalid format: " + repr(format))
+
     if output:
         output.write(key)
     else:
-        ansi_invert_spaces = sys.stdout.isatty()
+        ansi_invert_spaces = sys.stdout.isatty() and format == "plain"
         if ansi_invert_spaces:
             key = key.replace(" ", "\033[7m \033[27m")
 
-        click.echo(key)
+        click.echo(key, nl=(format == "plain"))
 
 
 @cli.command()
