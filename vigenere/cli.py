@@ -6,7 +6,7 @@ import click
 import strictyaml
 
 from .alphabet import ALPHABETS, get_alphabet
-from .cipher import Cipher, generate_key_alphabet_label
+from .cipher import Cipher
 
 # make help available at -h as well as default --help
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -150,7 +150,8 @@ def keygen(
     Generate a random key, suitable for use as a one time pad.
     """
 
-    key = generate_key_alphabet_label(length=length, alphabet_name=alphabet)
+    alpha = get_alphabet(name=alphabet)
+    key = alpha.generate_key(length=length)
 
     if format == "yaml":
         key = strictyaml.as_document({"key": key}).as_yaml()
@@ -189,7 +190,7 @@ def alphabet(
         return
 
     try:
-        alpha = get_alphabet(label)
+        alpha = get_alphabet(name=label)
     except KeyError:
         click.secho("Alphabet not found: " + label, fg="red")
         click.echo("Known alphabets: \n  - " + "\n  - ".join(ALPHABETS.keys()))

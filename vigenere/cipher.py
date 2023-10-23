@@ -1,5 +1,4 @@
 import operator
-import secrets
 from typing import Callable, Optional, TextIO
 
 from .alphabet import get_alphabet
@@ -91,17 +90,3 @@ class Cipher:
             output += o_chr
 
         return output
-
-
-def generate_key_alphabet_label(length: int, alphabet_name: str) -> str:
-    """
-    Generate a key from the given alphabet, using the `secrets` module CSPRNG.
-    """
-    return generate_key(length=length, chars=get_alphabet(name=alphabet_name).chars)
-
-
-def generate_key(length: int, chars: str) -> str:
-    """
-    Generate a key from the given alphabet, using the `secrets` module CSPRNG.
-    """
-    return "".join(secrets.choice(chars) for i in range(length))

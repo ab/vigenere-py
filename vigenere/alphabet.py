@@ -1,4 +1,5 @@
 import dataclasses
+import secrets
 import string
 
 
@@ -18,6 +19,12 @@ class Alphabet:
         Return the provided text with passthrough characters removed.
         """
         return text.translate(self._passthrough_trans)
+
+    def generate_key(self, length: int) -> str:
+        """
+        Generate a key from this alphabet, using the `secrets` module CSPRNG.
+        """
+        return "".join(secrets.choice(self.chars) for i in range(length))
 
 
 ALPHABET_PRINTABLE = Alphabet(
@@ -59,6 +66,9 @@ ALPHABET_ALIASES: dict[str, str] = {
 
 
 def get_alphabet(name: str) -> Alphabet:
+    """
+    Look up an Alphabet by name or alias.
+    """
     if name in ALPHABET_ALIASES:
         name = ALPHABET_ALIASES[name]
 
