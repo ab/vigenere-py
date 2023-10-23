@@ -87,24 +87,32 @@ def test_encrypt_defaults():
 
     runner = CliRunner()
     with runner.isolated_filesystem():
+        plaintext = fixture["plaintext"]
+        ciphertext = fixture["ciphertext"]
+        key = fixture["key"]
+
         with open("plain.txt", "w") as f:
-            f.write(fixture["plaintext"])
+            f.write(plaintext)
         with open("key.txt", "w") as f:
-            f.write(fixture["key"])
+            f.write(key)
 
         result = runner.invoke(
             cli,
             ["enc", "-k", "key.txt", "plain.txt"],
             catch_exceptions=False,
         )
-        assert result.output == fixture["ciphertext"]
+        assert result.output == ciphertext
 
         result = runner.invoke(
             cli,
             ["enc", "-k", "key.txt", "-o", "out.txt", "plain.txt"],
         )
         assert result.output == ""
-        assert open("out.txt").read() == fixture["ciphertext"]
+        assert open("out.txt").read() == ciphertext
+        assert result.exit_code == 0
+
+        result = runner.invoke(cli, ["enc", "-k", "key.txt"], input=plaintext)
+        assert result.output == ciphertext
         assert result.exit_code == 0
 
 
@@ -134,6 +142,12 @@ def test_decrypt_defaults():
         assert open("out.txt").read() == fixture["plaintext"]
         assert result.exit_code == 0
 
+        result = runner.invoke(
+            cli, ["dec", "-k", "key.txt"], input=fixture["ciphertext"]
+        )
+        assert result.output == fixture["plaintext"]
+        assert result.exit_code == 0
+
 
 def test_keygen():
     runner = CliRunner()
@@ -147,6 +161,13 @@ def test_keygen():
     letters_set = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
     assert all(c in letters_set for c in result.output.strip())
 
+    # test alias
+    result = runner.invoke(cli, ["genkey", "-a", "letters", "20"])
+    assert len(result.output.strip()) == 20
+    assert result.exit_code == 0
+    letters_set = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    assert all(c in letters_set for c in result.output.strip())
+
     with runner.isolated_filesystem():
         result = runner.invoke(cli, ["keygen", "-a", "letters", "-o", "key.txt", "20"])
         assert result.output == ""
@@ -154,6 +175,11 @@ def test_keygen():
         key = open("key.txt").read()
         assert len(key) == 20
         assert all(c in letters_set for c in key.strip())
+
+    result = runner.invoke(cli, ["keygen", "-f", "yaml", "10"])
+    assert result.output.startswith("key: ")
+    assert len(result.output) > 10
+    assert result.exit_code == 0
 
 
 def test_alphabet():

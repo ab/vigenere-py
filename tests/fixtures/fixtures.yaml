@@ -1,6 +1,7 @@
 %YAML 1.2
 ---
 cases:
+
   printable:
     case-fox:
       plaintext: |
@@ -13,6 +14,7 @@ cases:
       plaintext:  "The quick brown fox..."
       ciphertext: "The quick brown fox..."
       key:        "                      "
+
   letters:
     fox:
       plaintext: |
