@@ -1,0 +1,51 @@
+%YAML 1.2
+---
+cases:
+  printable:
+    case-fox:
+      plaintext: |
+        The quick brown fox jumps over the lazy dog.
+      ciphertext: |
+        yo?@y%dt+[i==D kxINOSSu$C*V&e&!HAL[-Izy|"jJ!
+      key: |
+        E'Y@(/z1?['JML1k2YUOh](3O*f/ 3!SXf[@g  |=zbr
+    noop:
+      plaintext:  "The quick brown fox..."
+      ciphertext: "The quick brown fox..."
+      key:        "                      "
+  letters:
+    fox:
+      plaintext: |
+        THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.
+      ciphertext: |
+        TJE QKEDU WLIGG GXZ SDFWN XZYZ BQS UECE OVY.
+      key: |
+        ACA AQWBK VUUKT BJC JJTHV JEUI IJO JEDG LHS
+    wiki-1:
+      plaintext:  "ATTACKING TONIGHT"
+      key:        "OCULORHINOLARINGOLOGY"
+      ciphertext: "OVNLQBPVT HZNZOUZ"
+    noop:
+      plaintext:   "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG..."
+      key:         "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      ciphertext:  "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG..."
+    passthrough:
+      plaintext:  " THE QUICK BROWN...\n"
+      ciphertext: " HUG PETYR NQXIG...\n"
+      key:        "ONCZKLWHMZJMT"
+    civilwar:
+      ciphertext: |
+        SEAN WIEUIIUY, STZ OAA GETWVX EP SYQU RRBO ALAL WZEP IK YTE EKCIJ. EIK
+        HPHQ OAHAUASF DRFX, TZ UTESVDSI, OAIE ZZO HFZ AGVHGC MLV TLGJ UAIAV VR
+        LAI VOPGDX XIAG. PRXHVD NP UQXA AAF P AAEP VOOYFAAUE VV QSDI R
+        ETPJWEIBP. P LSOI JFYN XTYE PCWW. A LYSKZCS IQSCCAGZ YVFN RYS OAHAUASF.
+      plaintext: |
+        GENL PEMBERTN, YOU CAN EXPECT NO HELP FROM THIS SIDE OF THE RIVER. LET
+        GENL JOHNSTON KNOW, IF POSSIBLE, WHEN YOU CAN ATTACK THE SAME POINT ON
+        THE ENEMYS LINE. INFORM ME ALSO AND I WILL ENDEAVOUR TO MAKE A
+        DIVERSION. I HAVE SENT SOME CAPS. I SUBJOIN DESPATCH FROM GEN JOHNSTON.
+      key: |
+        MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF
+        MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF
+        MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF
+        MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF
