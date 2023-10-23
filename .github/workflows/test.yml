@@ -35,4 +35,13 @@ jobs:
         run: poetry run mypy .
 
       - name: Run tests
-        run: poetry run pytest -v
+        run: poetry run coverage run -m pytest -v
+
+      - name: Generate coverage report
+        if: strategy.job-index == 0  # only upload once
+        run: poetry run coverage xml
+
+      - uses: codecov/codecov-action@v4-beta
+        if: strategy.job-index == 0  # only upload once
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
