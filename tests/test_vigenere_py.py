@@ -182,11 +182,41 @@ def test_keygen():
     assert result.exit_code == 0
 
 
-def test_alphabet():
+def test_alphabet_list():
     runner = CliRunner()
     result = runner.invoke(cli, ["alphabet"])
     assert result.output.startswith("Known alphabets:")
     assert result.exit_code == 0
+    assert result.output == "\n".join([
+        "Known alphabets:",
+        "  - printable         	All printable characters except tabs",
+        "  - letters           	Uppercase letters only",
+        "  - alphanumeric      	Mixed case letters and numbers",
+        "  - alphanumeric-upper	Uppercase letters and numbers",
+    ]) + "\n"
+
+    result = runner.invoke(cli, ["alphabet", "-f", "csv"])
+    assert result.exit_code == 0
+    assert result.output == "\n".join([
+        "name,description",
+        "printable,All printable characters except tabs",
+        "letters,Uppercase letters only",
+        "alphanumeric,Mixed case letters and numbers",
+        "alphanumeric-upper,Uppercase letters and numbers",
+    ]) + "\n"
+
+    result = runner.invoke(cli, ["alphabet", "-f", "tab"])
+    assert result.exit_code == 0
+    assert result.output == "\n".join([
+        "printable\tAll printable characters except tabs",
+        "letters\tUppercase letters only",
+        "alphanumeric\tMixed case letters and numbers",
+        "alphanumeric-upper\tUppercase letters and numbers",
+    ]) + "\n"
+
+
+def test_alphabet():
+    runner = CliRunner()
 
     result = runner.invoke(cli, ["alphabet", "printable"])
     assert result.output == ALPHABET_PRINTABLE.chars + "\n"
@@ -194,7 +224,7 @@ def test_alphabet():
 
     csv_printable = ''' ,!,"""",#,$,%,&,',(,),*,+,",",-,.,/,0,1,2,3,4,5,6,7,8,9,:,;,<,=,>,?,@,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,[,\\,],^,_,`,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,{,|,},~'''  # noqa: E501
 
-    result = runner.invoke(cli, ["alphabet", "-c", "printable"])
+    result = runner.invoke(cli, ["alphabet", "--csv", "printable"])
     assert result.output == csv_printable + "\n"
     assert result.exit_code == 0
 

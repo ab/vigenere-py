@@ -9,6 +9,7 @@ class Alphabet:
     chars: str
     passthrough: set[str]
     chars_dict: dict[str, int] = dataclasses.field(init=False)
+    description: str = ""
 
     def __post_init__(self) -> None:
         self.chars_dict = {v: i for i, v in enumerate(self.chars)}
@@ -31,22 +32,26 @@ ALPHABET_PRINTABLE = Alphabet(
     name="printable",
     chars=" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",  # noqa: E501
     passthrough={"\t", "\n", "\v", "\f", "\r"},
+    description="All printable characters except tabs",
 )
 
 ALPHABET_LETTERS_ONLY = Alphabet(
     name="letters",
     chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     passthrough=set(string.punctuation + string.whitespace),
+    description="Uppercase letters only",
 )
 ALPHABET_ALPHANUMERIC_UPPER = Alphabet(
     name="alphanumeric-upper",
     chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
     passthrough=set(string.punctuation + string.whitespace),
+    description="Uppercase letters and numbers",
 )
 ALPHABET_ALPHANUMERIC_MIXED = Alphabet(
     name="alphanumeric",
     chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
     passthrough=set(string.punctuation + string.whitespace),
+    description="Mixed case letters and numbers",
 )
 
 
@@ -73,3 +78,15 @@ def get_alphabet(name: str) -> Alphabet:
         name = ALPHABET_ALIASES[name]
 
     return ALPHABETS[name]
+
+
+def list_alphabets_labels() -> str:
+    """
+    Print help text describing each alphabet.
+    """
+    longest = max(len(a.name) for a in ALPHABETS.values())
+
+    return "\n".join(
+        "  - " + a.name.ljust(longest) + "\t" + a.description
+        for a in ALPHABETS.values()
+    )

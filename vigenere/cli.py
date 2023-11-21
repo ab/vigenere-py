@@ -5,7 +5,7 @@ from typing import Optional, TextIO
 import click
 import strictyaml
 
-from .alphabet import ALPHABETS, get_alphabet
+from .alphabet import ALPHABETS, get_alphabet, list_alphabets_labels
 from .cipher import Cipher
 
 # make help available at -h as well as default --help
@@ -172,9 +172,17 @@ def keygen(
 
 @cli.command()
 @click.argument("label", required=False)
-@click.option("-t", "--tab", is_flag=True, help="Tab delimit output")
-@click.option("-c", "--csv", "csv_out", is_flag=True, help="CSV format output")
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="plain",
+    type=click.Choice(["plain", "tab", "csv"]),
+)
+@click.option("--tab", is_flag=True, help="Tab delimit output")
+@click.option("--csv", "csv_out", is_flag=True, help="CSV format output")
 def alphabet(
+    format: str,
     label: Optional[str] = None,
     csv_out: bool = False,
     tab: bool = False,
@@ -182,29 +190,47 @@ def alphabet(
     """
     Print characters in the given alphabet.
 
-    Or, if no label is given, list known alphabet names.
+    Or, if no label is given, list all known alphabet names.
     """
 
+    if csv_out:
+        format = "csv"
+    if tab:
+        format = "tab"
+
     if not label:
-        click.echo("Known alphabets: \n  - " + "\n  - ".join(ALPHABETS.keys()))
+        if format == "csv":
+            writer = csv.writer(sys.stdout)
+            writer.writerow(["name", "description"])
+            for alpha in ALPHABETS.values():
+                row = [alpha.name, alpha.description]
+                writer.writerow(row)
+        elif format == "tab":
+            for alpha in ALPHABETS.values():
+                click.echo(alpha.name + "\t" + alpha.description)
+        elif format == "plain":
+            click.echo("Known alphabets:\n" + list_alphabets_labels())
+        else:
+            raise ValueError("Invalid format: " + repr(format))
+
         return
 
     try:
         alpha = get_alphabet(name=label)
     except KeyError:
         click.secho("Alphabet not found: " + label, fg="red")
-        click.echo("Known alphabets: \n  - " + "\n  - ".join(ALPHABETS.keys()))
+        click.echo("Known alphabets:\n" + list_alphabets_labels())
         sys.exit(1)
 
     chars = alpha.chars
 
-    if csv_out:
+    if format == "csv":
         row = list(chars)
         writer = csv.writer(sys.stdout)
         writer.writerow(row)
         return
 
-    if tab:
+    elif format == "tab":
         chars = "\t".join(chars)
 
     click.echo(chars)
