@@ -72,13 +72,14 @@ def encrypt(
     if not input:
         input = sys.stdin
 
-    # If output is a TTY, highlight spaces in ANSI inverted colors
+    c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
+
+    # If output is a TTY, highlight spaces in ANSI inverted colors, if we're
+    # using an alphabet that may contain spaces.
     if output:
         ansi_invert_spaces = False
     else:
-        ansi_invert_spaces = sys.stdout.isatty()
-
-    c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
+        ansi_invert_spaces = sys.stdout.isatty() and " " in c.alphabet.chars_dict
 
     if input.isatty():
         click.echo("Text to encrypt:", err=True)
@@ -172,7 +173,9 @@ def keygen(
     if output:
         output.write(key)
     else:
-        ansi_invert_spaces = sys.stdout.isatty() and format == "plain"
+        ansi_invert_spaces = (
+            sys.stdout.isatty() and format == "plain" and " " in alpha.chars_dict
+        )
         if ansi_invert_spaces:
             key = key.replace(" ", "\033[7m \033[27m")
 

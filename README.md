@@ -5,8 +5,6 @@
 [![Tests](https://github.com/ab/vigenere-py/workflows/Test/badge.svg)](https://github.com/ab/vigenere-py/actions?query=workflow%3ATest)
 [![License](https://img.shields.io/github/license/ab/vigenere-py)](https://github.com/ab/vigenere-py/blob/master/LICENSE)
 
-null
-
 ## Installation
 
 Install this package with `pipx` for use as a standalone CLI:
@@ -28,6 +26,42 @@ For help, run:
 You can also use:
 
     python -m vigenere --help
+
+### Examples
+
+Generating a key and encrypting:
+
+    $ vigenere genkey -a letters 20 > key.txt
+
+    $ cat key.txt
+    RVRTCLIWHNPZAOJLXEWY
+
+    $ cat plain.txt
+    ATTACK AT DAWN
+
+    $ vigenere enc -a letters -k key.txt plain.txt
+    ROKTEV IP KNLM
+
+Decrypting:
+
+    $ cat key.txt
+    RVRTCLIWHNPZAOJLXEWY
+
+    $ cat cipher.txt
+    ROKTEV IP KNLM
+
+    $ vigenere dec -a letters -k key.txt cipher.txt
+    ATTACK AT DAWN
+
+Interactive mode, end the message with `ctrl+d`:
+
+    $ vigenere enc -a letters
+    Key: •••••••••••••••••
+    Text to encrypt:
+    SECRET MESSAGE
+    Ciphertext:
+    QSWIIT PXZWDUG
+
 
 ### Bash shell completions
 
