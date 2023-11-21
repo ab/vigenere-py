@@ -7,6 +7,7 @@ import strictyaml
 
 from .alphabet import ALPHABETS, get_alphabet, list_alphabets_labels
 from .cipher import Cipher
+from .errors import CipherError
 
 # make help available at -h as well as default --help
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -82,7 +83,11 @@ def encrypt(
     if input.isatty():
         click.echo("Text to encrypt:", err=True)
 
-    ciphertext = c.encrypt(input.read())
+    try:
+        ciphertext = c.encrypt(input.read())
+    except CipherError as err:
+        click.secho("Error: " + str(err), fg="red")
+        sys.exit(3)
 
     if output:
         output.write(ciphertext)
@@ -119,7 +124,11 @@ def decrypt(
     if input.isatty():
         click.echo("Enter ciphertext...", err=True)
 
-    plaintext = c.decrypt(input.read())
+    try:
+        plaintext = c.decrypt(input.read())
+    except CipherError as err:
+        click.secho("Error: " + str(err), fg="red")
+        sys.exit(3)
 
     if output:
         output.write(plaintext)

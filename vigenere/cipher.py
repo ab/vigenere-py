@@ -72,17 +72,25 @@ class Cipher:
             try:
                 k = next(iter_key)
             except StopIteration:
-                raise CipherError(f"Unexpected key is shorter than {input_label}")
+                raise CipherError(
+                    f"Unexpected (bug?) key is shorter than {input_label}"
+                )
 
             try:
                 c_int = self.alphabet.chars_dict[c]
             except KeyError:
-                raise CipherError(f"Invalid character in {input_label}: {c!r}")
+                raise CipherError(
+                    f"Invalid character for alphabet {self.alphabet.name!r}"
+                    + f" in {input_label} input: {c!r}"
+                )
 
             try:
                 k_int = self.alphabet.chars_dict[k]
             except KeyError:
-                raise CipherError(f"Invalid character in key: {k!r}")
+                raise CipherError(
+                    f"Invalid character for alphabet {self.alphabet.name!r}"
+                    + f" in key: {k!r}"
+                )
 
             o_int = op(c_int, k_int) % len(self.alphabet.chars)
             o_chr = self.alphabet.chars[o_int]

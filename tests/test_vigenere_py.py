@@ -137,16 +137,142 @@ def test_decrypt_defaults():
         result = runner.invoke(
             cli,
             ["dec", "-k", "key.txt", "-o", "out.txt", "cipher.txt"],
+            catch_exceptions=False,
         )
         assert result.output == ""
         assert open("out.txt").read() == fixture["plaintext"]
         assert result.exit_code == 0
 
         result = runner.invoke(
-            cli, ["dec", "-k", "key.txt"], input=fixture["ciphertext"]
+            cli,
+            ["dec", "-k", "key.txt"],
+            input=fixture["ciphertext"],
+            catch_exceptions=False,
         )
         assert result.output == fixture["plaintext"]
         assert result.exit_code == 0
+
+
+def test_encrypt_errors():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        with open("badchars.txt", "w") as f:
+            f.write("foo")
+        with open("short.txt", "w") as f:
+            f.write("AA")
+        with open("plain.txt", "w") as f:
+            f.write("FOO")
+        with open("key.txt", "w") as f:
+            f.write("KEY")
+
+        result = runner.invoke(
+            cli,
+            ["enc", "-a", "letters", "-k", "nonexistent.txt", "plain.txt"],
+            catch_exceptions=False,
+        )
+        assert result.output.endswith("No such file or directory\n")
+        assert result.exit_code == 2
+
+        result = runner.invoke(
+            cli,
+            ["enc", "-a", "letters", "-k", "key.txt", "nonexistent.txt"],
+            catch_exceptions=False,
+        )
+        assert result.output.endswith("No such file or directory\n")
+        assert result.exit_code == 2
+
+        result = runner.invoke(
+            cli,
+            ["enc", "-a", "letters", "-k", "short.txt", "plain.txt"],
+            catch_exceptions=False,
+        )
+        assert result.output == "Error: Key is shorter than plaintext\n"
+        assert result.exit_code == 3
+
+        # bad char in key
+        result = runner.invoke(
+            cli,
+            ["enc", "-a", "letters", "-k", "badchars.txt", "plain.txt"],
+            catch_exceptions=False,
+        )
+        assert (
+            result.output
+            == "Error: Invalid character for alphabet 'letters' in key: 'f'\n"
+        )
+        assert result.exit_code == 3
+
+        # bad char in text
+        result = runner.invoke(
+            cli,
+            ["enc", "-a", "letters", "-k", "key.txt", "badchars.txt"],
+            catch_exceptions=False,
+        )
+        assert (
+            result.output
+            == "Error: Invalid character for alphabet 'letters' in plaintext input: 'f'\n"
+        )
+        assert result.exit_code == 3
+
+
+def test_decrypt_errors():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        with open("badchars.txt", "w") as f:
+            f.write("foo")
+        with open("short.txt", "w") as f:
+            f.write("AA")
+        with open("input.txt", "w") as f:
+            f.write("FOO")
+        with open("key.txt", "w") as f:
+            f.write("KEY")
+
+        result = runner.invoke(
+            cli,
+            ["dec", "-a", "letters", "-k", "nonexistent.txt", "input.txt"],
+            catch_exceptions=False,
+        )
+        assert result.output.endswith("No such file or directory\n")
+        assert result.exit_code == 2
+
+        result = runner.invoke(
+            cli,
+            ["dec", "-a", "letters", "-k", "key.txt", "nonexistent.txt"],
+            catch_exceptions=False,
+        )
+        assert result.output.endswith("No such file or directory\n")
+        assert result.exit_code == 2
+
+        result = runner.invoke(
+            cli,
+            ["dec", "-a", "letters", "-k", "short.txt", "input.txt"],
+            catch_exceptions=False,
+        )
+        assert result.output == "Error: Key is shorter than ciphertext\n"
+        assert result.exit_code == 3
+
+        # bad char in key
+        result = runner.invoke(
+            cli,
+            ["dec", "-a", "letters", "-k", "badchars.txt", "input.txt"],
+            catch_exceptions=False,
+        )
+        assert (
+            result.output
+            == "Error: Invalid character for alphabet 'letters' in key: 'f'\n"
+        )
+        assert result.exit_code == 3
+
+        # bad char in text
+        result = runner.invoke(
+            cli,
+            ["dec", "-a", "letters", "-k", "key.txt", "badchars.txt"],
+            catch_exceptions=False,
+        )
+        assert (
+            result.output
+            == "Error: Invalid character for alphabet 'letters' in ciphertext input: 'f'\n"
+        )
+        assert result.exit_code == 3
 
 
 def test_keygen():
@@ -187,32 +313,50 @@ def test_alphabet_list():
     result = runner.invoke(cli, ["alphabet"])
     assert result.output.startswith("Known alphabets:")
     assert result.exit_code == 0
-    assert result.output == "\n".join([
-        "Known alphabets:",
-        "  - printable         	All printable characters except tabs",
-        "  - letters           	Uppercase letters only",
-        "  - alphanumeric      	Mixed case letters and numbers",
-        "  - alphanumeric-upper	Uppercase letters and numbers",
-    ]) + "\n"
+    assert (
+        result.output
+        == "\n".join(
+            [
+                "Known alphabets:",
+                "  - printable         	All printable characters except tabs",
+                "  - letters           	Uppercase letters only",
+                "  - alphanumeric      	Mixed case letters and numbers",
+                "  - alphanumeric-upper	Uppercase letters and numbers",
+            ]
+        )
+        + "\n"
+    )
 
     result = runner.invoke(cli, ["alphabet", "-f", "csv"])
     assert result.exit_code == 0
-    assert result.output == "\n".join([
-        "name,description",
-        "printable,All printable characters except tabs",
-        "letters,Uppercase letters only",
-        "alphanumeric,Mixed case letters and numbers",
-        "alphanumeric-upper,Uppercase letters and numbers",
-    ]) + "\n"
+    assert (
+        result.output
+        == "\n".join(
+            [
+                "name,description",
+                "printable,All printable characters except tabs",
+                "letters,Uppercase letters only",
+                "alphanumeric,Mixed case letters and numbers",
+                "alphanumeric-upper,Uppercase letters and numbers",
+            ]
+        )
+        + "\n"
+    )
 
     result = runner.invoke(cli, ["alphabet", "-f", "tab"])
     assert result.exit_code == 0
-    assert result.output == "\n".join([
-        "printable\tAll printable characters except tabs",
-        "letters\tUppercase letters only",
-        "alphanumeric\tMixed case letters and numbers",
-        "alphanumeric-upper\tUppercase letters and numbers",
-    ]) + "\n"
+    assert (
+        result.output
+        == "\n".join(
+            [
+                "printable\tAll printable characters except tabs",
+                "letters\tUppercase letters only",
+                "alphanumeric\tMixed case letters and numbers",
+                "alphanumeric-upper\tUppercase letters and numbers",
+            ]
+        )
+        + "\n"
+    )
 
 
 def test_alphabet():

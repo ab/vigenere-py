@@ -77,16 +77,28 @@ def test_character_errors():
     with pytest.raises(CipherError, match="Key is shorter than plaintext"):
         c.encrypt(text="abcde")
 
-    with pytest.raises(CipherError, match="Invalid character in plaintext"):
+    with pytest.raises(
+        CipherError,
+        match="Invalid character for alphabet 'printable' in plaintext input",
+    ):
         c.encrypt(text="\xbfyo?")
-    with pytest.raises(CipherError, match="Invalid character in plaintext"):
+
+    with pytest.raises(
+        CipherError,
+        match="Invalid character for alphabet 'printable' in plaintext input",
+    ):
         c.encrypt(text="¿yo?")
 
-    with pytest.raises(CipherError, match="Invalid character in key"):
+    with pytest.raises(
+        CipherError, match="Invalid character for alphabet 'printable' in key"
+    ):
         badkey = Cipher(key="\xbfyo?")
         badkey.encrypt("omg")
 
-    with pytest.raises(CipherError, match="Invalid character in ciphertext"):
+    with pytest.raises(
+        CipherError,
+        match="Invalid character for alphabet 'printable' in ciphertext input",
+    ):
         c.decrypt(text="¿yo?")
 
 
@@ -96,26 +108,34 @@ def test_character_errors():
         ("letters", "4"),
         ("printable", "\xe9"),
         ("alphanumeric-upper", "z"),
-        ("alphanumeric-mixed", "\xe9"),
+        ("alphanumeric", "\xe9"),
     ],
 )
 def test_invalid_chars(alphabet, invalid):
     c = Cipher(key="WXYZ", alphabet_name=alphabet)
 
+    error_prefix = "Invalid character for alphabet"
+
     with pytest.raises(
-        CipherError, match=f"Invalid character in plaintext: {invalid!r}"
+        CipherError,
+        match=f"{error_prefix} {alphabet!r} in plaintext input: {invalid!r}",
     ):
         c.encrypt(text="YO" + invalid)
 
     with pytest.raises(
-        CipherError, match=f"Invalid character in ciphertext: {invalid!r}"
+        CipherError,
+        match=f"{error_prefix} {alphabet!r} in ciphertext input: {invalid!r}",
     ):
         c.decrypt(text="YO" + invalid)
 
     badkey = Cipher(key=invalid + "foo", alphabet_name=alphabet)
 
-    with pytest.raises(CipherError, match=f"Invalid character in key: {invalid!r}"):
+    with pytest.raises(
+        CipherError, match=f"{error_prefix} {alphabet!r} in key: {invalid!r}"
+    ):
         badkey.decrypt("BAR")
 
-    with pytest.raises(CipherError, match=f"Invalid character in key: {invalid!r}"):
+    with pytest.raises(
+        CipherError, match=f"{error_prefix} {alphabet!r} in key: {invalid!r}"
+    ):
         badkey.encrypt("BAR")
