@@ -7,7 +7,7 @@ import strictyaml
 
 from .alphabet import ALPHABETS, get_alphabet, list_alphabets_labels
 from .cipher import Cipher
-from .errors import CipherError
+from .errors import CLIError
 
 # make help available at -h as well as default --help
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -72,7 +72,11 @@ def encrypt(
     if not input:
         input = sys.stdin
 
-    c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
+    try:
+        c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
+    except CLIError as err:
+        click.secho("Error: " + str(err), fg="red")
+        sys.exit(3)
 
     # If output is a TTY, highlight spaces in ANSI inverted colors, if we're
     # using an alphabet that may contain spaces.
@@ -86,7 +90,7 @@ def encrypt(
 
     try:
         ciphertext = c.encrypt(input.read())
-    except CipherError as err:
+    except CLIError as err:
         click.secho("Error: " + str(err), fg="red")
         sys.exit(3)
 
@@ -120,14 +124,18 @@ def decrypt(
     if not input:
         input = sys.stdin
 
-    c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
+    try:
+        c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
+    except CLIError as err:
+        click.secho("Error: " + str(err), fg="red")
+        sys.exit(3)
 
     if input.isatty():
         click.echo("Enter ciphertext...", err=True)
 
     try:
         plaintext = c.decrypt(input.read())
-    except CipherError as err:
+    except CLIError as err:
         click.secho("Error: " + str(err), fg="red")
         sys.exit(3)
 

@@ -5,7 +5,7 @@ import pytest
 import strictyaml
 
 from vigenere.cipher import Cipher
-from vigenere.errors import CipherError, CLIError
+from vigenere.errors import CipherError, CLIError, InputError
 
 
 fixtures_dir = Path(__file__).parent.parent / "fixtures"
@@ -24,7 +24,7 @@ def test_cipher_init(mocker):
     assert c.alphabet.name == "printable"  # default
     assert c.key == "abc"
 
-    with pytest.raises(ValueError, match="Cannot pass both key and key_file"):
+    with pytest.raises(InputError, match="Cannot pass both key and key_file"):
         Cipher(key="abc", key_file=io.StringIO())
 
     with pytest.raises(CLIError):
@@ -33,10 +33,10 @@ def test_cipher_init(mocker):
     c = Cipher(key_file=io.StringIO("foobar"))
     assert c.key == "foobar"
 
-    with pytest.raises(ValueError, match="Empty key"):
+    with pytest.raises(InputError, match="Empty key"):
         Cipher(key="")
 
-    with pytest.raises(ValueError, match="Empty key"):
+    with pytest.raises(InputError, match="Empty key"):
         Cipher(key_file=io.StringIO(""))
 
 
@@ -47,8 +47,8 @@ def test_init_interactive_mocked(mocker):
     assert c.key == "somekey"
 
 
-def load_cases() -> list[tuple[str]]:
-    cases = load_fixtures()["cases"]
+def load_cases(section: str) -> list[tuple[str]]:
+    cases = load_fixtures()[section]
     output = []
 
     for alphabet_name, casedict in cases.items():
@@ -61,17 +61,29 @@ def load_cases() -> list[tuple[str]]:
     return output
 
 
-@pytest.mark.parametrize("alphabet_name,test_name,key,plain,ciphertext", load_cases())
+@pytest.mark.parametrize(
+    "alphabet_name,test_name,key,plain,ciphertext", load_cases("cases")
+)
 def test_all_fixtures(alphabet_name, test_name, key, plain, ciphertext):
     c = Cipher(key=key, alphabet_name=alphabet_name)
     assert c.encrypt(plain) == ciphertext
     assert c.decrypt(ciphertext) == plain
 
 
+@pytest.mark.parametrize(
+    "alphabet_name,test_name,key,plain,ciphertext", load_cases("insecure")
+)
+def test_insecure_fixtures(alphabet_name, test_name, key, plain, ciphertext):
+    c = Cipher(
+        key=key, alphabet_name=alphabet_name, insecure_allow_broken_short_key=True
+    )
+    assert c.encrypt(plain) == ciphertext
+    assert c.decrypt(ciphertext) == plain
+
 def test_character_errors():
     c = Cipher(key="WXYZ")
 
-    with pytest.raises(ValueError, match="Must provide text"):
+    with pytest.raises(InputError, match="Must provide text"):
         c.encrypt(text=None)
 
     with pytest.raises(CipherError, match="Key is shorter than plaintext"):

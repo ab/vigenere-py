@@ -2,9 +2,13 @@ class Error(Exception):
     pass
 
 
-class CipherError(Error):
+class CLIError(Error):
     pass
 
 
-class CLIError(Error):
+class CipherError(CLIError):
+    pass
+
+
+class InputError(CLIError):
     pass
