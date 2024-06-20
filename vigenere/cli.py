@@ -213,15 +213,22 @@ def alphabet(
     if not label:
         if format == "csv":
             writer = csv.writer(sys.stdout)
-            writer.writerow(["name", "description"])
+            header = ["name", "description", "aliases"]
+            writer.writerow(header)
+
             for alpha in ALPHABETS.values():
-                row = [alpha.name, alpha.description]
+                row = [alpha.name, alpha.description, alpha.aliases_str]
                 writer.writerow(row)
+
         elif format == "tab":
             for alpha in ALPHABETS.values():
-                click.echo(alpha.name + "\t" + alpha.description)
+                row = [alpha.name, alpha.description, alpha.aliases_str]
+                click.echo("\t".join(row))
+
         elif format == "plain":
-            click.echo("Known alphabets:\n" + list_alphabets_labels())
+            click.echo(
+                "Known alphabets:\n" + list_alphabets_labels(aliases=True)
+            )
         else:
             raise ValueError("Invalid format: " + repr(format))
 
@@ -231,7 +238,7 @@ def alphabet(
         alpha = get_alphabet(name=label)
     except KeyError:
         click.secho("Alphabet not found: " + label, fg="red")
-        click.echo("Known alphabets:\n" + list_alphabets_labels())
+        click.echo("Known alphabets:\n" + list_alphabets_labels(aliases=True))
         sys.exit(1)
 
     chars = alpha.chars

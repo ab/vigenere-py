@@ -107,8 +107,8 @@ def test_character_errors():
     [
         ("letters", "4"),
         ("printable", "\xe9"),
-        ("alphanumeric-upper", "z"),
-        ("alphanumeric", "\xe9"),
+        ("alpha-upper", "z"),
+        ("alpha-mixed", "\xe9"),
     ],
 )
 def test_invalid_chars(alphabet, invalid):

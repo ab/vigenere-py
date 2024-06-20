@@ -318,10 +318,10 @@ def test_alphabet_list():
         == "\n".join(
             [
                 "Known alphabets:",
-                "  - printable         	All printable characters except tabs",
-                "  - letters           	Uppercase letters only",
-                "  - alphanumeric      	Mixed case letters and numbers",
-                "  - alphanumeric-upper	Uppercase letters and numbers",
+                "  - printable   \tAll printable characters except tabs\t(ascii)",
+                "  - letters     \tUppercase letters only              \t(upper|uppercase)",
+                "  - alpha-mixed \tMixed case letters and numbers      \t(alpha|alphanumeric|alphanumeric-mixed)",
+                "  - alpha-upper \tUppercase letters and numbers       \t(alphanumeric-upper)",
             ]
         )
         + "\n"
@@ -333,11 +333,11 @@ def test_alphabet_list():
         result.output
         == "\n".join(
             [
-                "name,description",
-                "printable,All printable characters except tabs",
-                "letters,Uppercase letters only",
-                "alphanumeric,Mixed case letters and numbers",
-                "alphanumeric-upper,Uppercase letters and numbers",
+                "name,description,aliases",
+                "printable,All printable characters except tabs,ascii",
+                "letters,Uppercase letters only,upper|uppercase",
+                "alpha-mixed,Mixed case letters and numbers,alpha|alphanumeric|alphanumeric-mixed",
+                "alpha-upper,Uppercase letters and numbers,alphanumeric-upper",
             ]
         )
         + "\n"
@@ -349,10 +349,10 @@ def test_alphabet_list():
         result.output
         == "\n".join(
             [
-                "printable\tAll printable characters except tabs",
-                "letters\tUppercase letters only",
-                "alphanumeric\tMixed case letters and numbers",
-                "alphanumeric-upper\tUppercase letters and numbers",
+                "printable\tAll printable characters except tabs\tascii",
+                "letters\tUppercase letters only\tupper|uppercase",
+                "alpha-mixed\tMixed case letters and numbers\talpha|alphanumeric|alphanumeric-mixed",
+                "alpha-upper\tUppercase letters and numbers\talphanumeric-upper",
             ]
         )
         + "\n"

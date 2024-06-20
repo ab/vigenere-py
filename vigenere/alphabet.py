@@ -10,6 +10,7 @@ class Alphabet:
     passthrough: set[str]
     chars_dict: dict[str, int] = dataclasses.field(init=False)
     description: str = ""
+    aliases: set[str] = dataclasses.field(default_factory=set)
 
     def __post_init__(self) -> None:
         self.chars_dict = {v: i for i, v in enumerate(self.chars)}
@@ -27,6 +28,10 @@ class Alphabet:
         """
         return "".join(secrets.choice(self.chars) for i in range(length))
 
+    @property
+    def aliases_str(self) -> str:
+        return "|".join(sorted(self.aliases))
+
 
 ALPHABET_PRINTABLE = Alphabet(
     name="printable",
@@ -42,13 +47,13 @@ ALPHABET_LETTERS_ONLY = Alphabet(
     description="Uppercase letters only",
 )
 ALPHABET_ALPHANUMERIC_UPPER = Alphabet(
-    name="alphanumeric-upper",
+    name="alpha-upper",
     chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
     passthrough=set(string.punctuation + string.whitespace),
     description="Uppercase letters and numbers",
 )
 ALPHABET_ALPHANUMERIC_MIXED = Alphabet(
-    name="alphanumeric",
+    name="alpha-mixed",
     chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
     passthrough=set(string.punctuation + string.whitespace),
     description="Mixed case letters and numbers",
@@ -58,16 +63,24 @@ ALPHABET_ALPHANUMERIC_MIXED = Alphabet(
 ALPHABETS: dict[str, Alphabet] = {
     "printable": ALPHABET_PRINTABLE,
     "letters": ALPHABET_LETTERS_ONLY,
-    "alphanumeric": ALPHABET_ALPHANUMERIC_MIXED,
-    "alphanumeric-upper": ALPHABET_ALPHANUMERIC_UPPER,
+    "alpha-mixed": ALPHABET_ALPHANUMERIC_MIXED,
+    "alpha-upper": ALPHABET_ALPHANUMERIC_UPPER,
 }
 
 
 ALPHABET_ALIASES: dict[str, str] = {
+    "ascii": "printable",
     "upper": "letters",
     "uppercase": "letters",
-    "alphanumeric-mixed": "alphanumeric",
+    "alpha": "alpha-mixed",
+    "alphanumeric": "alpha-mixed",
+    "alphanumeric-upper": "alpha-upper",
+    "alphanumeric-mixed": "alpha-mixed",
 }
+
+
+for alias, target in ALPHABET_ALIASES.items():
+    ALPHABETS[target].aliases.add(alias)
 
 
 def get_alphabet(name: str) -> Alphabet:
@@ -80,13 +93,24 @@ def get_alphabet(name: str) -> Alphabet:
     return ALPHABETS[name]
 
 
-def list_alphabets_labels() -> str:
+def list_alphabets_labels(aliases: bool = False) -> str:
     """
     Print help text describing each alphabet.
     """
-    longest = max(len(a.name) for a in ALPHABETS.values())
+    longest = max(len(a.name) for a in ALPHABETS.values()) + 1
+    longest_desc = max(len(a.description) for a in ALPHABETS.values())
 
-    return "\n".join(
-        "  - " + a.name.ljust(longest) + "\t" + a.description
-        for a in ALPHABETS.values()
-    )
+    if aliases:
+        return "\n".join(
+            "\t".join([
+                "  - " + a.name.ljust(longest),
+                a.description.ljust(longest_desc),
+                "(" + a.aliases_str + ")",
+            ])
+            for a in ALPHABETS.values()
+        )
+    else:
+        return "\n".join(
+            "  - " + a.name.ljust(longest) + "\t" + a.description
+            for a in ALPHABETS.values()
+        )
