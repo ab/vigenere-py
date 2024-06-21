@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "vigenere-py"
-version = "0.1.4"
+version = "0.1.5"
 description = "Vigenere cipher encryption for Python"
 readme = "README.md"
 authors = ["Andy Brody <git@abrody.com>"]
