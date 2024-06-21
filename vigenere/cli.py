@@ -50,6 +50,7 @@ _alphabet_option = click.option(
 @click.option("-o", "--output", help="Output file", type=click.File("w"))
 @click.option("-k", "--key-file", help="Key file", type=click.File("r"))
 @click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
+@click.option("--insecure", help="Allow short keys to loop", is_flag=True, default=False)
 @_alphabet_option
 def encrypt(
     input: Optional[TextIO],
@@ -57,6 +58,7 @@ def encrypt(
     output: Optional[TextIO],
     alphabet: str,
     batch: bool,
+    insecure: bool,
 ) -> None:
     """
     Encrypt text with a Vigenère cipher.
@@ -73,7 +75,10 @@ def encrypt(
         input = sys.stdin
 
     try:
-        c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
+        c = Cipher(
+            key_file=key_file, batch=batch, alphabet_name=alphabet,
+            insecure_allow_broken_short_key=insecure,
+        )
     except CLIError as err:
         click.secho("Error: " + str(err), fg="red")
         sys.exit(3)
@@ -111,6 +116,7 @@ def encrypt(
 @click.option("-o", "--output", help="Output file", type=click.File("w"))
 @click.option("-k", "--key-file", help="Key file", type=click.File("r"))
 @click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
+@click.option("--insecure", help="Allow short keys to loop", is_flag=True, default=False)
 @_alphabet_option
 def decrypt(
     input: Optional[TextIO],
@@ -118,6 +124,7 @@ def decrypt(
     output: Optional[TextIO],
     alphabet: str,
     batch: bool,
+    insecure: bool,
 ) -> None:
     """Decrypt Vigenère ciphertext"""
 
@@ -125,7 +132,10 @@ def decrypt(
         input = sys.stdin
 
     try:
-        c = Cipher(key_file=key_file, batch=batch, alphabet_name=alphabet)
+        c = Cipher(
+            key_file=key_file, batch=batch, alphabet_name=alphabet,
+            insecure_allow_broken_short_key=insecure,
+        )
     except CLIError as err:
         click.secho("Error: " + str(err), fg="red")
         sys.exit(3)
