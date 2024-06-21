@@ -1,6 +1,6 @@
 import itertools
 import operator
-from typing import Callable, Optional, TextIO
+from typing import Callable, Iterator, Optional, TextIO
 
 from .alphabet import get_alphabet
 from .errors import CipherError, CLIError, InputError
@@ -71,6 +71,7 @@ class Cipher:
         output = ""
 
         iter_in = iter(text)
+        iter_key: Iterator[str]
 
         if self.insecure_allow_broken_short_key:
             # loop key forever if insecure mode is enabled
