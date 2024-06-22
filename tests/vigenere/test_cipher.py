@@ -80,6 +80,7 @@ def test_insecure_fixtures(alphabet_name, test_name, key, plain, ciphertext):
     assert c.encrypt(plain) == ciphertext
     assert c.decrypt(ciphertext) == plain
 
+
 def test_character_errors():
     c = Cipher(key="WXYZ")
 

@@ -102,11 +102,13 @@ def list_alphabets_labels(aliases: bool = False) -> str:
 
     if aliases:
         return "\n".join(
-            "\t".join([
-                "  - " + a.name.ljust(longest),
-                a.description.ljust(longest_desc),
-                "(" + a.aliases_str + ")",
-            ])
+            "\t".join(
+                [
+                    "  - " + a.name.ljust(longest),
+                    a.description.ljust(longest_desc),
+                    "(" + a.aliases_str + ")",
+                ]
+            )
             for a in ALPHABETS.values()
         )
     else:

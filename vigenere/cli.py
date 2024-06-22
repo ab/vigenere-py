@@ -50,7 +50,9 @@ _alphabet_option = click.option(
 @click.option("-o", "--output", help="Output file", type=click.File("w"))
 @click.option("-k", "--key-file", help="Key file", type=click.File("r"))
 @click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
-@click.option("--insecure", help="Allow short keys to loop", is_flag=True, default=False)
+@click.option(
+    "--insecure", help="Allow short keys to loop", is_flag=True, default=False
+)
 @_alphabet_option
 def encrypt(
     input: Optional[TextIO],
@@ -76,7 +78,9 @@ def encrypt(
 
     try:
         c = Cipher(
-            key_file=key_file, batch=batch, alphabet_name=alphabet,
+            key_file=key_file,
+            batch=batch,
+            alphabet_name=alphabet,
             insecure_allow_broken_short_key=insecure,
         )
     except CLIError as err:
@@ -116,7 +120,9 @@ def encrypt(
 @click.option("-o", "--output", help="Output file", type=click.File("w"))
 @click.option("-k", "--key-file", help="Key file", type=click.File("r"))
 @click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
-@click.option("--insecure", help="Allow short keys to loop", is_flag=True, default=False)
+@click.option(
+    "--insecure", help="Allow short keys to loop", is_flag=True, default=False
+)
 @_alphabet_option
 def decrypt(
     input: Optional[TextIO],
@@ -133,7 +139,9 @@ def decrypt(
 
     try:
         c = Cipher(
-            key_file=key_file, batch=batch, alphabet_name=alphabet,
+            key_file=key_file,
+            batch=batch,
+            alphabet_name=alphabet,
             insecure_allow_broken_short_key=insecure,
         )
     except CLIError as err:
@@ -244,9 +252,7 @@ def alphabet(
                 click.echo("\t".join(row))
 
         elif format == "plain":
-            click.echo(
-                "Known alphabets:\n" + list_alphabets_labels(aliases=True)
-            )
+            click.echo("Known alphabets:\n" + list_alphabets_labels(aliases=True))
         else:
             raise ValueError("Invalid format: " + repr(format))
 

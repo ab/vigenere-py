@@ -56,7 +56,10 @@ class Cipher:
         return self._crypt(text=text, op=operator.sub, input_label="ciphertext")
 
     def _crypt(
-        self, text: str, op: Callable[[int, int], int], input_label: str,
+        self,
+        text: str,
+        op: Callable[[int, int], int],
+        input_label: str,
     ) -> str:
         """
         Generic function handling encrypt and decrypt
