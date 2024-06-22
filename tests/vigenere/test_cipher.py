@@ -47,8 +47,8 @@ def test_init_interactive_mocked(mocker):
     assert c.key == "somekey"
 
 
-def load_cases(section: str) -> list[tuple[str]]:
-    cases = load_fixtures()[section]
+def load_cases() -> list[tuple[str]]:
+    cases = load_fixtures()["cases"]
     output = []
 
     for alphabet_name, casedict in cases.items():
@@ -56,26 +56,18 @@ def load_cases(section: str) -> list[tuple[str]]:
             key = info["key"]
             plain = info["plaintext"]
             ciphertext = info["ciphertext"]
-            output.append((alphabet_name, name, key, plain, ciphertext))
+            insecure = info.get("insecure", False)
+            output.append((alphabet_name, name, key, plain, ciphertext, insecure))
 
     return output
 
 
 @pytest.mark.parametrize(
-    "alphabet_name,test_name,key,plain,ciphertext", load_cases("cases")
+    "alphabet_name,test_name,key,plain,ciphertext,insecure", load_cases()
 )
-def test_all_fixtures(alphabet_name, test_name, key, plain, ciphertext):
-    c = Cipher(key=key, alphabet_name=alphabet_name)
-    assert c.encrypt(plain) == ciphertext
-    assert c.decrypt(ciphertext) == plain
-
-
-@pytest.mark.parametrize(
-    "alphabet_name,test_name,key,plain,ciphertext", load_cases("insecure")
-)
-def test_insecure_fixtures(alphabet_name, test_name, key, plain, ciphertext):
+def test_all_fixtures(alphabet_name, test_name, key, plain, ciphertext, insecure):
     c = Cipher(
-        key=key, alphabet_name=alphabet_name, insecure_allow_broken_short_key=True
+        key=key, alphabet_name=alphabet_name, insecure_allow_broken_short_key=insecure
     )
     assert c.encrypt(plain) == ciphertext
     assert c.decrypt(ciphertext) == plain

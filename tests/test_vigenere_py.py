@@ -26,7 +26,8 @@ def load_cases() -> list[tuple[str]]:
             key = info["key"]
             plain = info["plaintext"]
             ciphertext = info["ciphertext"]
-            output.append((alphabet_name, name, key, plain, ciphertext))
+            insecure = info.get("insecure", False)
+            output.append((alphabet_name, name, key, plain, ciphertext, insecure))
 
     return output
 
@@ -46,8 +47,10 @@ def test_help():
     assert "Vigenère cipher encryption" in result.output
 
 
-@pytest.mark.parametrize("alphabet_name,test_name,key,plain,ciphertext", load_cases())
-def test_encrypt_fixtures(alphabet_name, test_name, key, plain, ciphertext):
+@pytest.mark.parametrize(
+    "alphabet_name,test_name,key,plain,ciphertext,insecure", load_cases()
+)
+def test_encrypt_fixtures(alphabet_name, test_name, key, plain, ciphertext, insecure):
     runner = CliRunner()
     with runner.isolated_filesystem():
         with open("plain.txt", "w") as f:
@@ -55,17 +58,24 @@ def test_encrypt_fixtures(alphabet_name, test_name, key, plain, ciphertext):
         with open("key.txt", "w") as f:
             f.write(key)
 
+        if insecure:
+            opts = ["--insecure"]
+        else:
+            opts = []
+
         result = runner.invoke(
             cli,
-            ["enc", "-a", alphabet_name, "-k", "key.txt", "plain.txt"],
+            ["enc", "-a", alphabet_name, "-k", "key.txt"] + opts + ["plain.txt"],
             catch_exceptions=False,
         )
         assert result.output == ciphertext
         assert result.exit_code == 0
 
 
-@pytest.mark.parametrize("alphabet_name,test_name,key,plain,ciphertext", load_cases())
-def test_decrypt_fixtures(alphabet_name, test_name, key, plain, ciphertext):
+@pytest.mark.parametrize(
+    "alphabet_name,test_name,key,plain,ciphertext,insecure", load_cases()
+)
+def test_decrypt_fixtures(alphabet_name, test_name, key, plain, ciphertext, insecure):
     runner = CliRunner()
     with runner.isolated_filesystem():
         with open("cipher.txt", "w") as f:
@@ -73,9 +83,14 @@ def test_decrypt_fixtures(alphabet_name, test_name, key, plain, ciphertext):
         with open("key.txt", "w") as f:
             f.write(key)
 
+        if insecure:
+            opts = ["--insecure"]
+        else:
+            opts = []
+
         result = runner.invoke(
             cli,
-            ["dec", "-a", alphabet_name, "-k", "key.txt", "cipher.txt"],
+            ["dec", "-a", alphabet_name, "-k", "key.txt"] + opts + ["cipher.txt"],
             catch_exceptions=False,
         )
         assert result.output == plain

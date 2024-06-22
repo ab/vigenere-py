@@ -15,6 +15,20 @@ cases:
       ciphertext: "The quick brown fox..."
       key:        "                      "
 
+    case-fox-insecure:
+      insecure: true
+      plaintext: |
+        The quick brown fox jumps over the lazy dog.
+      ciphertext: |
+        yo?@y%dt+[i==D EmI9(yp~0O':D2$E{B&({\,9[k:5Z
+      key: |
+        E'Y@(/z1?['JML1
+    noop-insecure:
+      insecure: true
+      plaintext:  "The quick brown fox..."
+      ciphertext: "The quick brown fox..."
+      key:        "   "
+
   letters:
     fox:
       plaintext: |
@@ -52,42 +66,31 @@ cases:
         MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF
         MANCHESTER BLUFF MANCHESTER BLUFF MANCHESTER BLUFF
 
-insecure:
-
-  printable:
-    case-fox:
-      plaintext: |
-        The quick brown fox jumps over the lazy dog.
-      ciphertext: |
-        yo?@y%dt+[i==D EmI9(yp~0O':D2$E{B&({\,9[k:5Z
-      key: |
-        E'Y@(/z1?['JML1
-    noop:
-      plaintext:  "The quick brown fox..."
-      ciphertext: "The quick brown fox..."
-      key:        "   "
-
-  letters:
-    fox:
+    fox-insecure:
+      insecure: true
       plaintext: |
         THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.
       ciphertext: |
         TJE QKEDU WLIGG GXZ JWMPI KWOM NBO EBIA DQG.
       key: |
         ACA AQWBK VUUKT BJC
-    wiki-1:
+    wiki-1-insecure:
+      insecure: true
       plaintext:  "ATTACKING TONIGHT"
       key:        "OCULOR"
       ciphertext: "OVNLQBWPA ECEWIBE"
-    noop:
+    noop-insecure:
+      insecure: true
       plaintext:   "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG..."
       key:         "AAAAAA"
       ciphertext:  "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG..."
-    passthrough:
+    passthrough-insecure:
+      insecure: true
       plaintext:  " THE QUICK BROWN...\n"
       ciphertext: " HUG PEWPM ABCJP...\n"
       key:        "ONCZK"
-    civilwar:
+    civilwar-insecure:
+      insecure: true
       ciphertext: |
         SEAN WIEUIIUY, STZ OAA GETWVX EP SYQU RRBO ALAL WZEP IK YTE EKCIJ. EIK
         HPHQ OAHAUASF DRFX, TZ UTESVDSI, OAIE ZZO HFZ AGVHGC MLV TLGJ UAIAV VR
