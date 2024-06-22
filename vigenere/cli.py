@@ -1,6 +1,7 @@
 import csv
+import functools
 import sys
-from typing import Optional, TextIO
+from typing import Any, Callable, Optional, ParamSpec, TextIO, TypeVar
 
 import click
 import strictyaml
@@ -34,26 +35,59 @@ class AliasedGroup(click.Group):
 @click.group(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
 @click.version_option(package_name="vigenere-py")
 def cli() -> None:
-    """Vigenère cipher encryption for Python"""
+    """
+    Vigenère cipher encryption for Python.
+
+    The cipher alphabet of possible characters may be set by -a/--alphabet or
+    by env var VIGENERE_ALPHABET. (See `vigenere alphabet` for list.)
+
+    Run `vigenere COMMAND --help` for more info on each command.
+    """
 
 
+# Alphabet option is used by several commands
 _alphabet_option = click.option(
     "-a",
     "--alphabet",
     type=click.Choice(list(ALPHABETS.keys())),
+    help="Cipher alphabet, if not set by VIGENERE_ALPHABET",
+    metavar="ALPHABET",
     default="printable",
+    envvar="VIGENERE_ALPHABET",
 )
+
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def _cipher_options(f: Callable[P, R]) -> Callable[P, R]:
+    """
+    Common options for encrypt and decrypt
+    """
+
+    @click.argument("input", type=click.File("r"), required=False)
+    @_alphabet_option
+    @click.option(
+        "-b", "--batch", help="Non-interactive mode", is_flag=True, default=False
+    )
+    @click.option("-k", "--key-file", help="Key file", type=click.File("r"))
+    @click.option("-o", "--output", help="Output file", type=click.File("w"))
+    @click.option(
+        "--insecure",
+        is_flag=True,
+        default=False,
+        help="Allow short keys to loop (easily cracked!!)",
+    )
+    @functools.wraps(f)
+    def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
+        return f(*args, **kwargs)
+
+    return wrapped
 
 
 @cli.command(name="enc")
-@click.argument("input", type=click.File("r"), required=False)
-@click.option("-o", "--output", help="Output file", type=click.File("w"))
-@click.option("-k", "--key-file", help="Key file", type=click.File("r"))
-@click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
-@click.option(
-    "--insecure", help="Allow short keys to loop", is_flag=True, default=False
-)
-@_alphabet_option
+@_cipher_options
 def encrypt(
     input: Optional[TextIO],
     key_file: Optional[TextIO],
@@ -66,6 +100,8 @@ def encrypt(
     Encrypt text with a Vigenère cipher.
 
     Read plaintext from INPUT file or from stdin if not provided.
+
+    Prompt for key interactively if key file not given.
 
     For example:
 
@@ -116,14 +152,7 @@ def encrypt(
 
 
 @cli.command(name="dec")
-@click.argument("input", type=click.File("r"), required=False)
-@click.option("-o", "--output", help="Output file", type=click.File("w"))
-@click.option("-k", "--key-file", help="Key file", type=click.File("r"))
-@click.option("-b", "--batch", help="Non-interactive mode", is_flag=True, default=False)
-@click.option(
-    "--insecure", help="Allow short keys to loop", is_flag=True, default=False
-)
-@_alphabet_option
+@_cipher_options
 def decrypt(
     input: Optional[TextIO],
     key_file: Optional[TextIO],
@@ -132,7 +161,17 @@ def decrypt(
     batch: bool,
     insecure: bool,
 ) -> None:
-    """Decrypt Vigenère ciphertext"""
+    """
+    Decrypt Vigenère ciphertext.
+
+    Read plaintext from INPUT file or from stdin if not provided.
+
+    Prompt for key interactively if key file not given.
+
+    For example:
+
+        vigenere dec cipher.txt
+    """
 
     if not input:
         input = sys.stdin

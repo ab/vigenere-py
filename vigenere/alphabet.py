@@ -93,26 +93,19 @@ def get_alphabet(name: str) -> Alphabet:
     return ALPHABETS[name]
 
 
-def list_alphabets_labels(aliases: bool = False) -> str:
+def list_alphabets_labels(aliases: bool = True) -> str:
     """
     Print help text describing each alphabet.
     """
-    longest = max(len(a.name) for a in ALPHABETS.values()) + 1
-    longest_desc = max(len(a.description) for a in ALPHABETS.values())
-
-    if aliases:
-        return "\n".join(
-            "\t".join(
-                [
-                    "  - " + a.name.ljust(longest),
-                    a.description.ljust(longest_desc),
-                    "(" + a.aliases_str + ")",
-                ]
-            )
-            for a in ALPHABETS.values()
+    return "\n".join(
+        "\n".join(
+            [
+                "  " + a.name + ":",
+                "      " + a.description,
+                "      aliases: " + "(" + a.aliases_str + ")",
+                "      chars: " + a.chars,
+                "",
+            ]
         )
-    else:
-        return "\n".join(
-            "  - " + a.name.ljust(longest) + "\t" + a.description
-            for a in ALPHABETS.values()
-        )
+        for a in ALPHABETS.values()
+    )

@@ -329,17 +329,29 @@ def test_alphabet_list():
     assert result.output.startswith("Known alphabets:")
     assert result.exit_code == 0
     assert (
-        result.output
-        == "\n".join(
-            [
-                "Known alphabets:",
-                "  - printable   \tAll printable characters except tabs\t(ascii)",
-                "  - letters     \tUppercase letters only              \t(upper|uppercase)",
-                "  - alpha-mixed \tMixed case letters and numbers      \t(alpha|alphanumeric|alphanumeric-mixed)",
-                "  - alpha-upper \tUppercase letters and numbers       \t(alphanumeric-upper)",
-            ]
-        )
-        + "\n"
+        result.output.strip()
+        == """
+Known alphabets:
+  printable:
+      All printable characters except tabs
+      aliases: (ascii)
+      chars:  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+
+  letters:
+      Uppercase letters only
+      aliases: (upper|uppercase)
+      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+  alpha-mixed:
+      Mixed case letters and numbers
+      aliases: (alpha|alphanumeric|alphanumeric-mixed)
+      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+
+  alpha-upper:
+      Uppercase letters and numbers
+      aliases: (alphanumeric-upper)
+      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+""".strip()  # noqa: E501
     )
 
     result = runner.invoke(cli, ["alphabet", "-f", "csv"])
@@ -351,7 +363,7 @@ def test_alphabet_list():
                 "name,description,aliases",
                 "printable,All printable characters except tabs,ascii",
                 "letters,Uppercase letters only,upper|uppercase",
-                "alpha-mixed,Mixed case letters and numbers,alpha|alphanumeric|alphanumeric-mixed",
+                "alpha-mixed,Mixed case letters and numbers,alpha|alphanumeric|alphanumeric-mixed",  # noqa: E501
                 "alpha-upper,Uppercase letters and numbers,alphanumeric-upper",
             ]
         )
@@ -366,7 +378,7 @@ def test_alphabet_list():
             [
                 "printable\tAll printable characters except tabs\tascii",
                 "letters\tUppercase letters only\tupper|uppercase",
-                "alpha-mixed\tMixed case letters and numbers\talpha|alphanumeric|alphanumeric-mixed",
+                "alpha-mixed\tMixed case letters and numbers\talpha|alphanumeric|alphanumeric-mixed",  # noqa: E501
                 "alpha-upper\tUppercase letters and numbers\talphanumeric-upper",
             ]
         )
