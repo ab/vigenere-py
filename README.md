@@ -47,6 +47,34 @@ You can also use:
 
     python -m vigenere --help
 
+### Alphabets
+
+Several different alphabets are available. The default alphabet is `printable`,
+containing all printable ASCII characters except tabs.
+
+The other alphabets will pass through punctuation like spaces unchanged.
+
+    printable:
+        All printable characters except tabs
+        aliases: (ascii)
+        chars:  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+
+    letters:
+        Uppercase letters only
+        aliases: (upper|uppercase)
+        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+    alpha-mixed:
+        Mixed case letters and numbers
+        aliases: (alpha|alphanumeric|alphanumeric-mixed)
+        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+
+    alpha-upper:
+        Uppercase letters and numbers
+        aliases: (alphanumeric-upper)
+        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+
+
 ### Examples
 
 Generating a key and encrypting:
