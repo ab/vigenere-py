@@ -5,6 +5,26 @@
 [![Tests](https://github.com/ab/vigenere-py/workflows/Test/badge.svg)](https://github.com/ab/vigenere-py/actions?query=workflow%3ATest)
 [![License](https://img.shields.io/github/license/ab/vigenere-py)](https://github.com/ab/vigenere-py/blob/master/LICENSE)
 
+This is a Python implementation of the
+[Vigenère cipher](https://en.wikipedia.org/wiki/Vigen%C3%A8re_cipher), where
+each letter of the plaintext is shifted according to each letter of the key.
+
+Despite having been invented in the 16th century, the Vigenère cipher is still
+useful because it's simple enough for anyone to encipher and decipher using
+only pen and paper. See [cipher-wheel/](./cipher-wheel/) for images of
+printable cipher wheels. (Pin the centers together with a brass brad.)
+
+If the key is random and at least as long as the plaintext, the Vigenère cipher
+is effectively a [one-time pad](https://en.wikipedia.org/wiki/One-time_pad),
+which provide *perfect secrecy* when properly used.
+
+However, if the key is reused, not fully random, or shorter than the plaintext,
+then the cipher can be easily broken through frequency analysis.
+
+As a result, `vigenere-py` comes with a `keygen` command for generating
+suitable random keys, and it will refuse to encrypt text with a key that is too
+short unless the `--insecure` mode is specified.
+
 ## Installation
 
 Install this package with `pipx` for use as a standalone CLI:
