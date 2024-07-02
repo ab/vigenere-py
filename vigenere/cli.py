@@ -1,7 +1,7 @@
 import csv
 import functools
 import sys
-from typing import Any, Callable, Optional, ParamSpec, TextIO, TypeVar
+from typing import Callable, Optional, ParamSpec, TextIO, TypeVar
 
 import click
 import strictyaml
@@ -258,11 +258,13 @@ def keygen(
 )
 @click.option("--tab", is_flag=True, help="Tab delimit output")
 @click.option("--csv", "csv_out", is_flag=True, help="CSV format output")
+@click.option("--table", is_flag=True, help="Print decimal table")
 def alphabet(
     format: str,
     label: Optional[str] = None,
     csv_out: bool = False,
     tab: bool = False,
+    table: bool = False,
 ) -> None:
     """
     Print characters in the given alphabet.
@@ -304,15 +306,21 @@ def alphabet(
         click.echo("Known alphabets:\n" + list_alphabets_labels(aliases=True))
         sys.exit(1)
 
-    chars = alpha.chars
-
-    if format == "csv":
-        row = list(chars)
-        writer = csv.writer(sys.stdout)
-        writer.writerow(row)
+    if table:
+        for c in alpha.chars:
+            click.echo(alpha.char_to_digits(c) + "\t" + repr(c)[1:-1])
         return
 
-    elif format == "tab":
-        chars = "\t".join(chars)
+    if format == "csv":
+        row = list(alpha.chars_escaped)
+        writer = csv.writer(sys.stdout)
+        writer.writerow(row)
 
-    click.echo(chars)
+    elif format == "tab":
+        click.echo("\t".join(alpha.chars_escaped))
+
+    elif format == "plain":
+        click.echo(alpha.chars_for_display)
+
+    else:
+        raise ValueError(f"Bad format: {format!r}")
