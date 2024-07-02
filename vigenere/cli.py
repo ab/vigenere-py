@@ -16,6 +16,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 ALIASES = {
     "alpha": "alphabet",
+    "alphabets": "alphabet",
     "d": "dec",
     "decrypt": "dec",
     "e": "enc",
@@ -128,7 +129,7 @@ def encrypt(
     if output:
         ansi_invert_spaces = False
     else:
-        ansi_invert_spaces = sys.stdout.isatty() and " " in c.alphabet.chars_dict
+        ansi_invert_spaces = sys.stdout.isatty() and c.alphabet.ansi_spaces
 
     if input.isatty():
         click.echo("Text to encrypt:", err=True)
@@ -239,7 +240,7 @@ def keygen(
         output.write(key)
     else:
         ansi_invert_spaces = (
-            sys.stdout.isatty() and format == "plain" and " " in alpha.chars_dict
+            sys.stdout.isatty() and format == "plain" and alpha.ansi_spaces
         )
         if ansi_invert_spaces:
             key = key.replace(" ", "\033[7m \033[27m")
@@ -307,8 +308,8 @@ def alphabet(
         sys.exit(1)
 
     if table:
-        for c in alpha.chars:
-            click.echo(alpha.char_to_digits(c) + "\t" + repr(c)[1:-1])
+        for i, c in enumerate(alpha.chars_escaped):
+            click.echo(("%02d" % i) + "\t" + c)
         return
 
     if format == "csv":

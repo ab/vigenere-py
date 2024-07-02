@@ -3,6 +3,9 @@ import secrets
 import string
 
 
+from .errors import InputError
+
+
 @dataclasses.dataclass
 class Alphabet:
     name: str
@@ -10,11 +13,27 @@ class Alphabet:
     passthrough: set[str]
     chars_dict: dict[str, int] = dataclasses.field(init=False)
     description: str = ""
+    description_passthrough: str = ""
     aliases: set[str] = dataclasses.field(default_factory=set)
+    decimal: bool = False
+    specials_map: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
         self.chars_dict = {v: i for i, v in enumerate(self.chars)}
         self._passthrough_trans = str.maketrans({c: None for c in self.passthrough})
+
+    def prepare_key(self, text: str) -> str:
+        """
+        Given key text, prepare for use in encryption/decryption.
+        - Remove passthrough characters.
+        - If this alphabet has decimal=True, convert decimal input to chars.
+        """
+        cleaned = self.remove_passthrough(text)
+
+        if self.decimal:
+            return self.decimal_to_str(cleaned)
+        else:
+            return cleaned
 
     def remove_passthrough(self, text: str) -> str:
         """
@@ -22,15 +41,29 @@ class Alphabet:
         """
         return text.translate(self._passthrough_trans)
 
-    def generate_key(self, length: int) -> str:
+    def generate_key(self, length: int, auto_decimal: bool = True) -> str:
         """
         Generate a key from this alphabet, using the `secrets` module CSPRNG.
         """
-        return "".join(secrets.choice(self.chars) for i in range(length))
+        key = "".join(secrets.choice(self.chars) for i in range(length))
+
+        if self.decimal and auto_decimal:
+            return self.str_to_decimal(key)
+
+        return key
 
     @property
     def aliases_str(self) -> str:
         return "|".join(sorted(self.aliases))
+
+    @property
+    def ansi_spaces(self) -> bool:
+        """
+        Default setting for whether output should use fancy ansi inverted color
+        spaces. This will default to true if space is in the alphabet and this
+        isn't a decimal alphabet.
+        """
+        return " " in self.chars_dict and not self.decimal
 
     @property
     def chars_for_display(self) -> str:
@@ -40,34 +73,73 @@ class Alphabet:
 
     @property
     def chars_escaped(self) -> list[str]:
-        specials_map = {
-            "\0": "\\0", "\t": "\\t", "\n": "\\n", "\f": "\\f", "\r": "\\r",
-        }
-        return [
-            specials_map[c] if c in specials_map else c for c in self.chars
-        ]
+        specials_map = {"\0": "\\0", "\t": "\\t", "\n": "\\n", "\f": "\\f", "\r": "\\r"}
+        return [specials_map[c] if c in specials_map else c for c in self.chars]
 
-    def char_to_digits(self, char: str) -> str:
+    def _char_to_decimal(self, char: str) -> str:
         """
         Given a char, return a 2-digit int (base 10) index in the alphabet.
 
-        e.g. "~" -> "99"
+        e.g. if alphabet='decimal':
+            "~" -> "99"
         """
         return "%02d" % self.chars_dict[char]
+
+    def str_to_decimal(self, text: str) -> str:
+        """
+        Format string as a series of 2-digit int (base 10) indexes in the
+        alphabet. Each 2-digit number is separated by spaces.
+
+        e.g. if alphabet='decimal':
+            "FOO!" -> "43 52 52 06"
+        """
+
+        return " ".join(self._char_to_decimal(c) for c in text)
+
+    def decimal_to_str(self, decimals: str) -> str:
+        """
+        Given a string of whitespace separated decimals that represent indexes
+        in the alphabet, convert to a string of chars in the alphabet.
+
+        e.g. if alphabet='decimal':
+            "43 52 52 06" -> "FOO!"
+        """
+
+        s = ""
+        for dec in decimals.split():
+            try:
+                num = int(dec)
+            except ValueError as err:
+                raise InputError(f"Invalid decimal input: {dec!r}") from err
+
+            if num < 0:
+                raise InputError(f"Negative numbers are invalid: {num!r}")
+            if num >= len(self.chars):
+                maxnum = len(self.chars) - 1
+                raise InputError(
+                    f"Invalid input for alphabet: {dec!r} not in 0..{maxnum!r}"
+                )
+
+            s += self.chars[num]
+
+        return s
 
 
 ALPHABET_DECIMAL = Alphabet(
     name="decimal",
+    decimal=True,
     chars="\0\t\n\f\r !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",  # noqa: E501
     passthrough=set(),  # NB: \v not in passthrough, unlike printable
     description="100-char full ASCII, ciphertext written as digits",
+    description_passthrough="none",
 )
 
 ALPHABET_PRINTABLE = Alphabet(
     name="printable",
     chars=" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",  # noqa: E501
     passthrough={"\t", "\n", "\v", "\f", "\r"},
-    description="All printable characters except tabs/newlines",
+    description="All printable characters and spaces",
+    description_passthrough="other whitespace",
 )
 
 ALPHABET_LETTERS_ONLY = Alphabet(
@@ -75,18 +147,21 @@ ALPHABET_LETTERS_ONLY = Alphabet(
     chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     passthrough=set(string.punctuation + string.whitespace),
     description="Uppercase letters only",
+    description_passthrough="punctuation/whitespace",
 )
 ALPHABET_ALPHANUMERIC_UPPER = Alphabet(
     name="alpha-upper",
     chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
     passthrough=set(string.punctuation + string.whitespace),
     description="Uppercase letters and numbers",
+    description_passthrough="punctuation/whitespace",
 )
 ALPHABET_ALPHANUMERIC_MIXED = Alphabet(
     name="alpha-mixed",
     chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
     passthrough=set(string.punctuation + string.whitespace),
     description="Mixed case letters and numbers",
+    description_passthrough="punctuation/whitespace",
 )
 
 
@@ -135,6 +210,7 @@ def list_alphabets_labels(aliases: bool = True) -> str:
                 "  " + a.name + ":",
                 "      " + a.description,
                 "      aliases: " + "(" + a.aliases_str + ")",
+                "      passthrough: " + a.description_passthrough,
                 "      chars: " + a.chars_for_display,
                 "",
             ]
