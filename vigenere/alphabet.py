@@ -1,6 +1,7 @@
 import dataclasses
 import secrets
 import string
+import textwrap
 
 
 from .errors import InputError
@@ -31,7 +32,7 @@ class Alphabet:
         cleaned = self.remove_passthrough(text)
 
         if self.decimal:
-            return self.decimal_to_str(cleaned)
+            return self.decimal_decode(cleaned)
         else:
             return cleaned
 
@@ -48,7 +49,7 @@ class Alphabet:
         key = "".join(secrets.choice(self.chars) for i in range(length))
 
         if self.decimal and auto_decimal:
-            return self.str_to_decimal(key)
+            return self.decimal_encode(key)
 
         return key
 
@@ -85,7 +86,7 @@ class Alphabet:
         """
         return "%02d" % self.chars_dict[char]
 
-    def str_to_decimal(self, text: str) -> str:
+    def decimal_encode(self, text: str, wrap: int | None = 60) -> str:
         """
         Format string as a series of 2-digit int (base 10) indexes in the
         alphabet. Each 2-digit number is separated by spaces.
@@ -94,9 +95,12 @@ class Alphabet:
             "FOO!" -> "43 52 52 06"
         """
 
-        return " ".join(self._char_to_decimal(c) for c in text)
+        encoded = " ".join(self._char_to_decimal(c) for c in text)
+        if wrap:
+            return textwrap.fill(encoded, width=wrap)
+        return encoded
 
-    def decimal_to_str(self, decimals: str) -> str:
+    def decimal_decode(self, decimals: str) -> str:
         """
         Given a string of whitespace separated decimals that represent indexes
         in the alphabet, convert to a string of chars in the alphabet.

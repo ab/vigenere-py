@@ -1,6 +1,5 @@
 import itertools
 import operator
-import textwrap
 from typing import Callable, Iterator, Optional, TextIO
 
 from .alphabet import get_alphabet
@@ -17,7 +16,7 @@ class Cipher:
         alphabet_name: str = "printable",
         insecure_allow_broken_short_key: bool = False,
         max_key_size: int = 1024 * 1024,
-        wrap_decimal_width: int | None = 70,
+        wrap_decimal_width: int | None = 60,
     ):
         """
         If the key is random and longer than the plaintext, then this is
@@ -60,9 +59,9 @@ class Cipher:
 
         # convert output to decimal as needed
         if self.alphabet.decimal:
-            output = self.alphabet.str_to_decimal(output)
-            if self.wrap_decimal_width:
-                output = textwrap.fill(output, width=self.wrap_decimal_width) + "\n"
+            output = (
+                self.alphabet.decimal_encode(output, wrap=self.wrap_decimal_width)
+            ) + "\n"
 
         return output
 
@@ -71,7 +70,7 @@ class Cipher:
 
         # convert decimal input as needed
         if self.alphabet.decimal:
-            text = self.alphabet.decimal_to_str(text)
+            text = self.alphabet.decimal_decode(text)
 
         return self._crypt(text=text, op=operator.sub, input_label="ciphertext")
 
