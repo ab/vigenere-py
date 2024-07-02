@@ -3,7 +3,7 @@ import operator
 from typing import Callable, Iterator, Optional, TextIO
 
 from .alphabet import get_alphabet
-from .errors import CipherError, CLIError, InputError
+from .errors import CipherError, InputError
 from .pwinput import pwinput
 
 
@@ -15,6 +15,7 @@ class Cipher:
         batch: bool = False,
         alphabet_name: str = "printable",
         insecure_allow_broken_short_key: bool = False,
+        max_key_size: int = 1024 * 1024,
     ):
         """
         If the key is random and longer than the plaintext, then this is
@@ -30,8 +31,9 @@ class Cipher:
             raise InputError("Cannot pass both key and key_file")
 
         if key_file:
-            # TODO: ideally we should handle huge files like /dev/zero without OOM
-            key = key_file.read()
+            key = key_file.read(max_key_size + 1)
+            if len(key) > max_key_size:
+                raise InputError(f"Exceeded max key size: {max_key_size} B")
         elif key is None:
             if batch:
                 raise InputError("Must provide key")
