@@ -41,7 +41,7 @@ jobs:
         if: strategy.job-index == 0  # only upload once
         run: poetry run coverage xml
 
-      - uses: codecov/codecov-action@v4-beta
+      - uses: codecov/codecov-action@v4
         if: strategy.job-index == 0  # only upload once
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
