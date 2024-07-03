@@ -63,35 +63,35 @@ all printable ASCII characters with spaces but no other whitespace.
 
 The other alphabets will pass through punctuation like spaces unchanged.
 
-  decimal:
-      100-char full ASCII, ciphertext written as digits
-      aliases: (100|ascii)
-      passthrough: none
-      chars: ␀␉␊␌␍ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+    decimal:
+        100-char full ASCII, ciphertext written as digits
+        aliases: (100|ascii)
+        passthrough: none
+        chars: ␀␉␊␌␍ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 
-  printable:
-      All printable characters and spaces
-      aliases: (print|wheel)
-      passthrough: other whitespace
-      chars:  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+    printable:
+        All printable characters and spaces
+        aliases: (print|wheel)
+        passthrough: other whitespace
+        chars:  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 
-  letters:
-      Uppercase letters only
-      aliases: (upper|uppercase)
-      passthrough: punctuation/whitespace
-      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    letters:
+        Uppercase letters only
+        aliases: (upper|uppercase)
+        passthrough: punctuation/whitespace
+        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
-  alpha-mixed:
-      Mixed case letters and numbers
-      aliases: (alpha|alphanumeric|alphanumeric-mixed)
-      passthrough: punctuation/whitespace
-      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+    alpha-mixed:
+        Mixed case letters and numbers
+        aliases: (alpha|alphanumeric|alphanumeric-mixed)
+        passthrough: punctuation/whitespace
+        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
 
-  alpha-upper:
-      Uppercase letters and numbers
-      aliases: (alphanumeric-upper)
-      passthrough: punctuation/whitespace
-      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+    alpha-upper:
+        Uppercase letters and numbers
+        aliases: (alphanumeric-upper)
+        passthrough: punctuation/whitespace
+        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 
 ### Examples
 
