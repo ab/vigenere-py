@@ -50,31 +50,45 @@ You can also use:
 
 ### Alphabets
 
-Several different alphabets are available. The default alphabet is `printable`,
-containing all printable ASCII characters except tabs.
+Several different alphabets are available. The `decimal` alphabet expects keys
+and ciphertext to be 2-digit decimal numbers. This makes it convenient to
+compute by hand because encryption is just adding the numbers modulo 100.
+
+The other alphabets are more traditional ciphers that can be computed on paper
+with the help of a table or a cipher wheel. The `printable` alphabet contains
+all printable ASCII characters with spaces but no other whitespace.
 
 The other alphabets will pass through punctuation like spaces unchanged.
 
-    printable:
-        All printable characters except tabs
-        aliases: (ascii)
-        chars:  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+  decimal:
+      100-char full ASCII, ciphertext written as digits
+      aliases: (100|ascii)
+      passthrough: none
+      chars: ␀␉␊␌␍ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 
-    letters:
-        Uppercase letters only
-        aliases: (upper|uppercase)
-        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+  printable:
+      All printable characters and spaces
+      aliases: (print|wheel)
+      passthrough: other whitespace
+      chars:  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 
-    alpha-mixed:
-        Mixed case letters and numbers
-        aliases: (alpha|alphanumeric|alphanumeric-mixed)
-        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+  letters:
+      Uppercase letters only
+      aliases: (upper|uppercase)
+      passthrough: punctuation/whitespace
+      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
-    alpha-upper:
-        Uppercase letters and numbers
-        aliases: (alphanumeric-upper)
-        chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+  alpha-mixed:
+      Mixed case letters and numbers
+      aliases: (alpha|alphanumeric|alphanumeric-mixed)
+      passthrough: punctuation/whitespace
+      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
 
+  alpha-upper:
+      Uppercase letters and numbers
+      aliases: (alphanumeric-upper)
+      passthrough: punctuation/whitespace
+      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 
 ### Examples
 
@@ -111,6 +125,45 @@ Interactive mode, end the message with `ctrl+d`:
     Ciphertext:
     QSWIIT PXZWDUG
 
+#### Decimal
+
+The `decimal` alphabet (aka `ascii` or `100`) expects keys and ciphertext to be
+encoded as two-digit numbers in base 10.
+
+    $ vigenere genkey -a ascii 14 > key.txt
+
+    $ cat key.txt
+    20 95 47 06 32 32 16 88 59 87
+
+    $ echo 'Hello, world!' > plain.txt
+
+    $ vigenere enc -a ascii -k key.txt plain.txt
+    18 32 84 77 37 76 86 89 86 97 95 30 76 36
+
+To directly encode or decode from decimal, use `vigenere decimal`.
+
+Note that decoded output for the `ascii` alphabet may contain control
+characters like `\0`!
+
+    $ export VIGENERE_ALPHABET=ascii
+
+    $ echo 'Hello!' | vigenere decimal -e
+    45 74 81 81 84 06 02
+
+    $ echo '45 74 81 81 84 06 02' | vigenere decimal -d
+    Hello!
+
+    $ echo '00 01 02 03 63' | vigenere decimal -d | xxd
+    00000000: 0009 0a0c 5a                             ....Z
+
+Decimal encoding also works with other alphabets, if you want that for some
+reason.
+
+    $ echo 'ABCD' | vigenere decimal -a letters -e
+    00 01 02 03
+
+    $ echo '23 24 25 26 27' | vigenere decimal -a alpha -d
+    XYZab
 
 ### Bash shell completions
 
