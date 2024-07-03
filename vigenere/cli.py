@@ -6,7 +6,12 @@ from typing import Callable, Optional, ParamSpec, TextIO, TypeVar
 import click
 import strictyaml
 
-from .alphabet import ALPHABETS, get_alphabet, list_alphabets_labels
+from .alphabet import (
+    ALPHABETS,
+    Alphabet,
+    get_alphabet,
+    list_alphabets_labels,
+)
 from .cipher import Cipher
 from .errors import CLIError
 
@@ -19,6 +24,7 @@ ALIASES = {
     "alphabets": "alphabet",
     "d": "dec",
     "decrypt": "dec",
+    "digits": "decimal",
     "e": "enc",
     "encrypt": "enc",
     "genkey": "keygen",
@@ -46,15 +52,48 @@ def cli() -> None:
     """
 
 
+def validate_alphabet(
+    ctx: click.Context, param: click.core.Parameter, value: str
+) -> Alphabet:
+    """
+    Click param validator for Alphabet. Accepts string as input and returns an
+    Alphabet. Prints error/usage message if no alphabet is found with that
+    name.
+    """
+
+    try:
+        return get_alphabet(name=value)
+    except KeyError:
+        click.echo("Known alphabets:\n" + list_alphabets_labels(aliases=True), err=True)
+        click.secho(
+            "Error: Alphabet not found: " + repr(value), fg="red", bold=True, err=True
+        )
+        ctx.exit(1)
+
+
+def validate_alphabet_optional(
+    ctx: click.Context, param: click.core.Parameter, value: Optional[str]
+) -> Optional[Alphabet]:
+    """
+    Click param validator for Alphabet. Accepts optional string as input and
+    returns either None or an Alphabet.
+    """
+
+    if not value:
+        return None
+
+    return validate_alphabet(ctx=ctx, param=param, value=value)
+
+
 # Alphabet option is used by several commands
 _alphabet_option = click.option(
     "-a",
     "--alphabet",
-    type=click.Choice(list(ALPHABETS.keys())),
     help="Cipher alphabet, if not set by VIGENERE_ALPHABET",
     metavar="ALPHABET",
     default="printable",
     envvar="VIGENERE_ALPHABET",
+    callback=validate_alphabet,
 )
 
 
@@ -93,7 +132,7 @@ def encrypt(
     input: Optional[TextIO],
     key_file: Optional[TextIO],
     output: Optional[TextIO],
-    alphabet: str,
+    alphabet: Alphabet,
     batch: bool,
     insecure: bool,
 ) -> None:
@@ -219,14 +258,14 @@ def decrypt(
 def keygen(
     length: int,
     output: Optional[TextIO],
-    alphabet: str,
+    alphabet: Alphabet,
     format: str,
 ) -> None:
     """
     Generate a random key, suitable for use as a one time pad.
     """
 
-    alpha = get_alphabet(name=alphabet)
+    alpha = alphabet
     key = alpha.generate_key(length=length)
 
     if format == "yaml":
@@ -249,7 +288,7 @@ def keygen(
 
 
 @cli.command()
-@click.argument("label", required=False)
+@click.argument("alphabet", required=False, callback=validate_alphabet_optional)
 @click.option(
     "-f",
     "--format",
@@ -261,6 +300,7 @@ def keygen(
 @click.option("--csv", "csv_out", is_flag=True, help="CSV format output")
 @click.option("--table", is_flag=True, help="Print decimal table")
 def alphabet(
+    alphabet: Optional[Alphabet],
     format: str,
     label: Optional[str] = None,
     csv_out: bool = False,
@@ -278,7 +318,7 @@ def alphabet(
     if tab:
         format = "tab"
 
-    if not label:
+    if not alphabet:
         if format == "csv":
             writer = csv.writer(sys.stdout)
             header = ["name", "description", "aliases"]
@@ -300,12 +340,7 @@ def alphabet(
 
         return
 
-    try:
-        alpha = get_alphabet(name=label)
-    except KeyError:
-        click.secho("Alphabet not found: " + label, fg="red")
-        click.echo("Known alphabets:\n" + list_alphabets_labels(aliases=True))
-        sys.exit(1)
+    alpha = alphabet
 
     if table:
         for i, c in enumerate(alpha.chars_escaped):
@@ -325,3 +360,77 @@ def alphabet(
 
     else:
         raise ValueError(f"Bad format: {format!r}")
+
+
+@cli.command()
+@click.argument("file", type=click.File("r"), required=False)
+@_alphabet_option
+@click.option(
+    "-e",
+    "--encode",
+    "mode",
+    flag_value="encode",
+    help="Encode string to decimal",
+)
+@click.option(
+    "-d",
+    "--decode",
+    "mode",
+    flag_value="decode",
+    help="Decode decimal to string",
+)
+@click.option(
+    "-w", "--wrap", metavar="WIDTH", default=60, help="Wrap decimal output at WIDTH"
+)
+@click.pass_context
+def decimal(
+    ctx: click.Context,
+    alphabet: Alphabet,
+    mode: str,
+    file: Optional[TextIO],
+    wrap: int,
+) -> None:
+    """
+    Decimal encode/decode data and print to standard output.
+
+    In -e/--encode mode, accept string as input and convert to digits according
+    to each character's index in the cipher alphabet.
+
+    In -d/--decode mode, accept space-separated digits as input and convert to
+    a string of characters in the alphabet.
+
+    For example:
+
+        fortune | vigenere decimal -a 100 -e
+
+        echo 45 74 81 81 84 | vigenere decimal -a 100 -d
+    """
+
+    if not mode:
+        click.echo(ctx.get_help(), err=True)
+        click.echo("\nError: Must set mode -e or -d", err=True)
+        ctx.exit(1)
+
+    if not file:
+        if sys.stdin.isatty():
+            click.echo("Enter input on stdin, end with EOF/ctrl^d...", err=True)
+
+        file = sys.stdin
+
+    text = file.read()
+
+    try:
+        if mode == "encode":
+            text = alphabet.remove_passthrough(text)
+            click.echo(alphabet.decimal_encode(text=text, wrap=wrap))
+        elif mode == "decode":
+            click.echo(
+                alphabet.decimal_decode(decimals=text),
+                nl="\n" not in alphabet.chars_dict,
+            )
+        else:
+            raise ValueError(f"Invalid mode: {mode!r}")
+
+    except CLIError as err:
+        click.secho("Error: " + str(err), fg="red", bold=True)
+        sys.exit(3)

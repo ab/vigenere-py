@@ -84,7 +84,12 @@ class Alphabet:
         e.g. if alphabet='decimal':
             "~" -> "99"
         """
-        return "%02d" % self.chars_dict[char]
+        try:
+            return "%02d" % self.chars_dict[char]
+        except KeyError as err:
+            raise InputError(
+                f"Invalid input char {char!r} for alphabet {self.name!r}"
+            ) from err
 
     def decimal_encode(self, text: str, wrap: int | None = 60) -> str:
         """
@@ -198,6 +203,9 @@ def get_alphabet(name: str) -> Alphabet:
     """
     Look up an Alphabet by name or alias.
     """
+    if not isinstance(name, str):
+        raise ValueError(f"name must be str, got {name!r}")
+
     if name in ALPHABET_ALIASES:
         name = ALPHABET_ALIASES[name]
 
