@@ -489,7 +489,7 @@ def test_decimal():
 
 
 @pytest.mark.parametrize("alphabet_name,test_name,plain,decimal", load_decimal_cases())
-def test_encode_fixtures(alphabet_name, test_name, plain, decimal):
+def test_decimal_fixtures(alphabet_name, test_name, plain, decimal):
     runner = CliRunner()
     with runner.isolated_filesystem():
         with open("plain.txt", "w") as f:
@@ -526,3 +526,22 @@ def test_encode_fixtures(alphabet_name, test_name, plain, decimal):
 
         assert result.output == expected_plain
         assert result.exit_code == 0
+
+
+@pytest.mark.parametrize(
+    "alphabet_name,opts,text,error",
+    [
+        ("100", ["-e"], "foo \v bar", "Invalid input char '\\x0b'"),
+        ("printable", ["-e"], "Vigènere", "Invalid input char 'è'"),
+        ("100", ["-d"], "10 abc", "Invalid decimal input: 'abc'"),
+        ("letters", ["-d"], "10 50", "Invalid input for alphabet: '50' not in 0..25"),
+    ],
+)
+def test_decimal_errors(
+    alphabet_name: str, opts: list[str], text: str, error: str
+) -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ["decimal", "-a", alphabet_name] + opts, input=text)
+    assert error in result.output
+    assert result.exit_code == 3
