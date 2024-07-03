@@ -4,9 +4,14 @@ from pathlib import Path
 
 import pytest
 import strictyaml
+from click.shell_completion import shell_complete
 from click.testing import CliRunner
 
-from vigenere.alphabet import ALPHABET_PRINTABLE, ALPHABET_LETTERS_ONLY
+from vigenere.alphabet import (
+    ALPHABET_PRINTABLE,
+    ALPHABET_LETTERS_ONLY,
+    list_alphabets_names,
+)
 from vigenere.cli import cli
 
 
@@ -121,7 +126,7 @@ def test_alphabet_defaults(args: list[str]) -> None:
     result = runner.invoke(cli, args)
 
     assert "Error: Must set option -a/--alphabet" in result.output
-    assert result.exit_code == 1
+    assert result.exit_code == 2
 
 
 def test_encrypt_env():
@@ -331,6 +336,14 @@ def test_keygen():
 
     result = runner.invoke(cli, ["keygen", "10"])
     assert "Must set option -a/--alphabet" in result.output
+    assert result.exit_code == 2
+
+    result = runner.invoke(cli, ["keygen", "10"], env={"VIGENERE_ALPHABET": "nonesuch"})
+    assert "Invalid value for $VIGENERE_ALPHABET: 'nonesuch'" in result.output
+    assert result.exit_code == 1
+
+    result = runner.invoke(cli, ["keygen", "-a", "nonesuch", "10"])
+    assert "Invalid value for -a/--alphabet: 'nonesuch'" in result.output
     assert result.exit_code == 1
 
     result = runner.invoke(
@@ -466,8 +479,8 @@ def test_alphabet():
     assert result.output == "\t".join(string.ascii_uppercase) + "\n"
     assert result.exit_code == 0
 
-    result = runner.invoke(cli, ["alphabet", "nonexistent"])
-    assert "Error: Alphabet not found: 'nonexistent'" in result.output
+    result = runner.invoke(cli, ["alphabet", "nonesuch"])
+    assert "Invalid value for -a/--alphabet: 'nonesuch'" in result.output
     assert result.exit_code == 1
 
     result = runner.invoke(cli, ["alphabet", "--table", "letters"])
@@ -487,7 +500,7 @@ def test_decimal():
 
     result = runner.invoke(cli, ["decimal"])
     assert "Must set option -a/--alphabet" in result.output
-    assert result.exit_code == 1
+    assert result.exit_code == 2
 
     result = runner.invoke(cli, ["decimal", "-a", "100"])
     assert "Must set mode -e or -d" in result.output
@@ -575,3 +588,79 @@ def test_decimal_errors(
     result = runner.invoke(cli, ["decimal", "-a", alphabet_name] + opts, input=text)
     assert error in result.output
     assert result.exit_code == 3
+
+
+@pytest.fixture()
+def _patch_for_completion(monkeypatch):
+    monkeypatch.setattr(
+        "click.shell_completion.BashComplete._check_version", lambda self: True
+    )
+
+
+@pytest.mark.usefixtures("_patch_for_completion")
+def test_tab_completion(monkeypatch, capsys) -> None:
+    """
+    This is a somewhat convoluted way to test that tab completion works.
+
+    Previously this was accidentally broken by printing text and exiting
+    nonzero within a param validator callback. Click gracefully swallows
+    click.UsageError exceptions within tab completion, but not directly
+    printing to stderr.
+    """
+
+    complete_env = {
+        "_VIGENERE_COMPLETE": "bash_complete",
+        "COMP_WORDS": "vigenere\nkeygen\n--alpha\n",
+        "COMP_CWORD": "2",
+    }
+
+    for k, v in complete_env.items():
+        monkeypatch.setenv(k, v)
+
+    rv = shell_complete(
+        cli,
+        {},
+        "vigenere",
+        complete_var="_VIGENERE_COMPLETE",
+        instruction="bash_complete",
+    )
+    captured = capsys.readouterr()
+
+    assert captured.out == "plain,--alphabet\n"
+    assert captured.err == ""
+    assert rv == 0
+
+
+@pytest.mark.usefixtures("_patch_for_completion")
+def test_tab_completion_arg(monkeypatch, capsys) -> None:
+    """
+    Test custom tab completion
+    """
+
+    complete_env = {
+        "_VIGENERE_COMPLETE": "bash_complete",
+        "COMP_WORDS": "vigenere\nkeygen\n--alphabet\n\n",
+        "COMP_CWORD": "3",
+    }
+
+    for k, v in complete_env.items():
+        monkeypatch.setenv(k, v)
+
+    rv = shell_complete(
+        cli,
+        {},
+        "vigenere",
+        complete_var="_VIGENERE_COMPLETE",
+        instruction="bash_complete",
+    )
+    captured = capsys.readouterr()
+
+    alphas = list_alphabets_names(aliases=True)
+    assert alphas
+    assert "decimal" in alphas
+
+    expected = "\n".join(["plain," + name for name in alphas])
+
+    assert captured.out == expected + "\n"
+    assert captured.err == ""
+    assert rv == 0

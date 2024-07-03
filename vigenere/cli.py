@@ -5,12 +5,15 @@ from typing import Callable, Optional, ParamSpec, TextIO, TypeVar
 
 import click
 import strictyaml
+from click.core import ParameterSource
+from click.shell_completion import CompletionItem
 
 from .alphabet import (
     ALPHABETS,
     Alphabet,
     get_alphabet,
     list_alphabets_labels,
+    list_alphabets_names,
 )
 from .cipher import Cipher
 from .errors import CLIError
@@ -62,25 +65,33 @@ def validate_alphabet(
     """
 
     if value == ALPHABET_UNSET:
-        # click.echo(ctx.get_help(), err=True)
-        click.echo(
-            "\n".join(
-                [
-                    "Error: Must set option -a/--alphabet or env var VIGENERE_ALPHABET",
-                    "\nKnown alphabets: " + ", ".join(ALPHABETS.keys()),
-                    "(See `vigenere alphabets` for more info)",
-                ]
-            ),
-            err=True,
+        message = "\n".join(
+            [
+                "Must set option -a/--alphabet or env var VIGENERE_ALPHABET",
+                "\nKnown alphabets: " + ", ".join(ALPHABETS.keys()),
+                "(See `vigenere alphabets` for more info)",
+            ]
         )
-        ctx.exit(1)
+        # NB: we may be inside shell completion, so we don't want to directly
+        # print to stdout/stderr
+        raise click.UsageError(message)
 
     try:
         return get_alphabet(name=value)
+
     except KeyError:
+        # customize error based on param source
+        source = ctx.get_parameter_source("alphabet")
+        source_label = "-a/--alphabet"
+        if source == ParameterSource.ENVIRONMENT:
+            source_label = "$VIGENERE_ALPHABET"
+
         click.echo("Known alphabets:\n" + list_alphabets_labels(aliases=True), err=True)
         click.secho(
-            "Error: Alphabet not found: " + repr(value), fg="red", bold=True, err=True
+            f"Error: Invalid value for {source_label}: {value!r}",
+            fg="red",
+            bold=True,
+            err=True,
         )
         ctx.exit(1)
 
@@ -102,6 +113,17 @@ def validate_alphabet_optional(
 ALPHABET_UNSET = "<unset>"
 
 
+def shell_complete_alphabet(
+    ctx: click.Context, param: click.core.Parameter, incomplete: str
+) -> list[str] | list[CompletionItem]:
+    """
+    Shell completion for --alphabet
+    """
+    alphas = list_alphabets_names(aliases=True)
+
+    return [a for a in alphas if a.startswith(incomplete)]
+
+
 # Alphabet option is used by several commands
 _alphabet_option = click.option(
     "-a",
@@ -111,6 +133,7 @@ _alphabet_option = click.option(
     default=ALPHABET_UNSET,
     envvar="VIGENERE_ALPHABET",
     callback=validate_alphabet,
+    shell_complete=shell_complete_alphabet,
 )
 
 
@@ -315,7 +338,7 @@ def keygen(
 )
 @click.option("--tab", is_flag=True, help="Tab delimit output")
 @click.option("--csv", "csv_out", is_flag=True, help="CSV format output")
-@click.option("--table", is_flag=True, help="Print decimal table")
+@click.option("--table", is_flag=True, help="Print decimal table of indexes")
 def alphabet(
     alphabet: Optional[Alphabet],
     format: str,

@@ -216,7 +216,7 @@ def get_alphabet(name: str) -> Alphabet:
 
 def list_alphabets_labels(aliases: bool = True) -> str:
     """
-    Print help text describing each alphabet.
+    Return help text describing each alphabet.
     """
     return "\n".join(
         "\n".join(
@@ -231,3 +231,14 @@ def list_alphabets_labels(aliases: bool = True) -> str:
         )
         for a in ALPHABETS.values()
     )
+
+
+def list_alphabets_names(aliases: bool = True) -> list[str]:
+    """
+    List all known alphabet names.
+    """
+    alphas = list(ALPHABETS.keys())
+    if aliases:
+        alphas += list(ALPHABET_ALIASES.keys())
+
+    return alphas
