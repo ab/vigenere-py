@@ -38,6 +38,9 @@ Alternatively, you can install this package for use as a library via `pip` (idea
 
     pip install vigenere-py
 
+⚠️ Note: The name of this Python package is `vigenere-py`, while the name of the
+command is `vigenere`. There is an unrelated Python package named `vigenere`.
+
 ## Usage
 
 For help, run:
