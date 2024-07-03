@@ -185,7 +185,9 @@ ALPHABETS: dict[str, Alphabet] = {
 
 ALPHABET_ALIASES: dict[str, str] = {
     "100": "decimal",
-    "ascii": "printable",
+    "ascii": "decimal",
+    "print": "printable",
+    "wheel": "printable",
     "upper": "letters",
     "uppercase": "letters",
     "alpha": "alpha-mixed",

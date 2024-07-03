@@ -377,13 +377,13 @@ def test_alphabet_list():
 Known alphabets:
   decimal:
       100-char full ASCII, ciphertext written as digits
-      aliases: (100)
+      aliases: (100|ascii)
       passthrough: none
       chars: ␀␉␊␌␍ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 
   printable:
       All printable characters and spaces
-      aliases: (ascii)
+      aliases: (print|wheel)
       passthrough: other whitespace
       chars:  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 
@@ -414,8 +414,8 @@ Known alphabets:
         == "\n".join(
             [
                 "name,description,aliases",
-                'decimal,"100-char full ASCII, ciphertext written as digits",100',
-                "printable,All printable characters and spaces,ascii",
+                'decimal,"100-char full ASCII, ciphertext written as digits",100|ascii',
+                "printable,All printable characters and spaces,print|wheel",
                 "letters,Uppercase letters only,upper|uppercase",
                 "alpha-mixed,Mixed case letters and numbers,alpha|alphanumeric|alphanumeric-mixed",  # noqa: E501
                 "alpha-upper,Uppercase letters and numbers,alphanumeric-upper",
@@ -430,8 +430,8 @@ Known alphabets:
         result.output
         == "\n".join(
             [
-                "decimal\t100-char full ASCII, ciphertext written as digits\t100",
-                "printable\tAll printable characters and spaces\tascii",
+                "decimal\t100-char full ASCII, ciphertext written as digits\t100|ascii",
+                "printable\tAll printable characters and spaces\tprint|wheel",
                 "letters\tUppercase letters only\tupper|uppercase",
                 "alpha-mixed\tMixed case letters and numbers\talpha|alphanumeric|alphanumeric-mixed",  # noqa: E501
                 "alpha-upper\tUppercase letters and numbers\talphanumeric-upper",
