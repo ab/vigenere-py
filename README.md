@@ -203,9 +203,24 @@ with the key `MANCHESTER BLUFF`. (Text corrects some errors in the original.)
         THE ENEMYS LINE. INFORM ME ALSO AND I WILL ENDEAVOUR TO MAKE A
         DIVERSION. I HAVE SENT SOME CAPS. I SUBJOIN DESPATCH FROM GEN JOHNSTON.
 
-### Bash shell completions
+### Shell completions
+
+Tab completion is supported thanks to the [Click CLI](https://click.palletsprojects.com/en/8.1.x/shell-completion/#enabling-completion).
+
+
+**Bash:**
 
     _VIGENERE_COMPLETE=bash_source vigenere > ~/.local/share/bash-completion/completions/vigenere
+
+**Zsh:**
+
+    _VIGENERE_COMPLETE=zsh_source vigenere > ~/.../some-dir/vigenere-complete.zsh
+    # source this file from ~/.zshrc
+
+**Fish:**
+
+    _VIGENERE_COMPLETE=fish_source vigenere > ~/.config/fish/completions/vigenere.fish
+
 
 ## Development
 
