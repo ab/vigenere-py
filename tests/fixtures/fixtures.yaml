@@ -2,6 +2,69 @@
 ---
 cases:
 
+  decimal:
+    world:
+      plaintext: |
+        Hello, World!
+      plaintext_decimal: |
+        45 74 81 81 84 17 05 60 84 87 81 73 06 02
+      ciphertext: |
+        98 23 74 53 35 00 19 97 04 77 57 69 92 39
+      key: |
+        53 49 93 72 51 83 14 37 20 90 76 96 86 37
+
+    noop:
+      plaintext: |
+        The quick brown fox jumps over the lazy dog.
+      plaintext_decimal: |
+        57 77 74 05
+        86 90 78 72 80 05
+        71 87 84 92 83 05
+        75 84 93 05
+        79 90 82 85 88 05
+        84 91 74 87 05
+        89 77 74 05
+        81 70 95 94 05
+        73 84 76 19 02
+      ciphertext: |
+        57 77 74 05 86 90 78 72 80 05 71 87 84 92 83 05 75 84 93 05
+        79 90 82 85 88 05 84 91 74 87 05 89 77 74 05 81 70 95 94 05
+        73 84 76 19 02
+      key: |
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+    world-insecure:
+      insecure: True
+      plaintext: |
+        Hello, World!
+      plaintext_decimal: |
+        45 74 81 81 84 17 05 60 84 87 81 73 06 02
+      ciphertext: |
+        26 45 40 34 87 98 76 19 37 90 62 44 65 55
+      key:
+        81 71 59 53 03
+
+    noop-insecure:
+      insecure: True
+      plaintext: |
+        The quick brown fox jumps over the lazy dog.
+      plaintext_decimal: |
+        57 77 74 05
+        86 90 78 72 80 05
+        71 87 84 92 83 05
+        75 84 93 05
+        79 90 82 85 88 05
+        84 91 74 87 05
+        89 77 74 05
+        81 70 95 94 05
+        73 84 76 19 02
+      ciphertext: |
+        57 77 74 05 86 90 78 72 80 05 71 87 84 92 83 05 75 84 93 05
+        79 90 82 85 88 05 84 91 74 87 05 89 77 74 05 81 70 95 94 05
+        73 84 76 19 02
+      key: "00 00 00"
+
   printable:
     case-fox:
       plaintext: |
