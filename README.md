@@ -53,15 +53,22 @@ You can also use:
 
 ### Alphabets
 
-Several different alphabets are available. The `decimal` alphabet expects keys
-and ciphertext to be 2-digit decimal numbers. This makes it convenient to
-compute by hand because encryption is just adding the numbers modulo 100.
+Several different alphabets are available. Specify the alphabet using the
+option `-a/--alphabet` or the `VIGENERE_ALPHABET` environment variable.
 
-The other alphabets are more traditional ciphers that can be computed on paper
-with the help of a table or a cipher wheel. The `printable` alphabet contains
-all printable ASCII characters with spaces but no other whitespace.
+The `decimal` alphabet encodes keys and ciphertext as 2-digit decimal numbers.
+This makes it convenient to compute by hand because encryption is just adding
+the numbers modulo 100. See
+[printouts/Decimal 100 Alphabet.pdf](./printouts/Decimal%20100%20Alphabet.pdf)
+for a printable table.
+
+The other alphabets are more traditional Vigenère ciphers that can be computed
+on paper with the help of a table or a cipher wheel. The `printable` alphabet
+contains all printable ASCII characters with spaces but no other whitespace.
 
 The other alphabets will pass through punctuation like spaces unchanged.
+
+    $ vigenere alphabets
 
     decimal:
         100-char full ASCII, ciphertext written as digits
@@ -128,7 +135,7 @@ Interactive mode, end the message with `ctrl+d`:
     Ciphertext:
     QSWIIT PXZWDUG
 
-#### Decimal
+### Decimal
 
 The `decimal` alphabet (aka `ascii` or `100`) expects keys and ciphertext to be
 encoded as two-digit numbers in base 10.
@@ -167,6 +174,34 @@ reason.
 
     $ echo '23 24 25 26 27' | vigenere decimal -a alpha -d
     XYZab
+
+### Insecure mode
+
+A classical Vigenère cipher repeats the key. Unlike a one-time pad, this can be
+trivially broken by frequency analysis.
+
+However, if you want to reproduce historical messages that use repeated keys
+(such as US Civil War era ciphers), then the `--insecure` option may be used.
+
+Obviously this shouldn't be used for anything of importance, unless you are a
+[Confederate general trying to surrender](https://www.augustachronicle.com/story/news/2010/12/26/civil-war-message-decoded/14566657007/).
+
+Here we'll decrypt a [famous message](https://en.wikisource.org/wiki/Encrypted_message_to_John_Pemberton,_1863-07-04)
+with the key `MANCHESTER BLUFF`. (Text corrects some errors in the original.)
+
+    $ cat cipher.txt
+        SEAN WIEUIIUY, STZ OAA GETWVX EP SYQU RRBO ALAL WZEP IK YTE EKCIJ. EIK
+        HPHQ OAHAUASF DRFX, TZ UTESVDSI, OAIE ZZO HFZ AGVHGC MLV TLGJ UAIAV VR
+        LAI VOPGDX XIAG. PRXHVD NP UQXA AAF P AAEP VOOYFAAUE VV QSDI R
+        ETPJWEIBP. P LSOI JFYN XTYE PCWW. A LYSKZCS IQSCCAGZ YVFN RYS OAHAUASF.
+
+    $ echo 'MANCHESTER BLUFF' > key.txt
+
+    $ vigenere dec -a letters -k key.txt --insecure cipher.txt
+        GENL PEMBERTN, YOU CAN EXPECT NO HELP FROM THIS SIDE OF THE RIVER. LET
+        GENL JOHNSTON KNOW, IF POSSIBLE, WHEN YOU CAN ATTACK THE SAME POINT ON
+        THE ENEMYS LINE. INFORM ME ALSO AND I WILL ENDEAVOUR TO MAKE A
+        DIVERSION. I HAVE SENT SOME CAPS. I SUBJOIN DESPATCH FROM GEN JOHNSTON.
 
 ### Bash shell completions
 
@@ -209,4 +244,8 @@ Install poe:
 
 Run tests:
 
+    # all tests and linters
+    poe all
+
+    # just pytest
     poe test
