@@ -11,7 +11,7 @@ each letter of the plaintext is shifted according to each letter of the key.
 
 Despite having been invented in the 16th century, the Vigenère cipher is still
 useful because it's simple enough for anyone to encipher and decipher using
-only pen and paper. See [cipher-wheel/](./cipher-wheel/) for images of
+only pen and paper. See [cipher-wheel/](./printouts/cipher-wheel/) for images of
 printable cipher wheels. (Pin the centers together with a brass brad.)
 
 If the key is random and at least as long as the plaintext, the Vigenère cipher
