@@ -40,6 +40,15 @@ def test_cipher_init(mocker):
     with pytest.raises(InputError, match="Empty key"):
         Cipher(key_file=io.StringIO(""))
 
+    with pytest.raises(InputError, match="Exceeded max key size"):
+        Cipher(key_file=io.StringIO("x" * 50), max_key_size=40)
+
+    with pytest.raises(InputError, match="both alphabet and alphabet_name"):
+        Cipher(key="foo", alphabet=ALPHABET_PRINTABLE, alphabet_name="foo")
+
+    with pytest.raises(InputError, match="Must pass alphabet"):
+        Cipher(key="foo")
+
 
 def test_init_interactive_mocked(mocker):
     stub = mocker.patch("vigenere.cipher.pwinput", return_value="somekey")

@@ -1,4 +1,5 @@
 import string
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -28,6 +29,22 @@ def load_cases() -> list[tuple[str]]:
             ciphertext = info["ciphertext"]
             insecure = info.get("insecure", False)
             output.append((alphabet_name, name, key, plain, ciphertext, insecure))
+
+    return output
+
+
+def load_decimal_cases() -> list[tuple[str]]:
+    cases = load_fixtures()["cases"]
+    output = []
+
+    for alphabet_name, casedict in cases.items():
+        for name, info in casedict.items():
+            if "plaintext_decimal" not in info:
+                continue
+
+            plain = info["plaintext"]
+            decimal = info["plaintext_decimal"]
+            output.append((alphabet_name, name, plain, decimal))
 
     return output
 
@@ -426,3 +443,86 @@ def test_alphabet():
     result = runner.invoke(cli, ["alphabet", "nonexistent"])
     assert "Error: Alphabet not found: 'nonexistent'" in result.output
     assert result.exit_code == 1
+
+    result = runner.invoke(cli, ["alphabet", "--table", "letters"])
+    assert result.exit_code == 0
+    letters_table = "\n".join(
+        "%02d" % (ord(c) - ord("A")) + "\t" + c for c in ALPHABET_LETTERS_ONLY.chars
+    )
+    assert result.output == letters_table + "\n"
+
+    result = runner.invoke(cli, ["alphabet", "--format", "bad", "letters"])
+    assert "Invalid value" in result.output
+    assert result.exit_code == 2
+
+
+def test_decimal():
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ["decimal"])
+    assert "Must set mode -e or -d" in result.output
+    assert result.exit_code == 1
+
+    plain = "Hello!"
+    decimal = "45 74 81 81 84 06"
+
+    result = runner.invoke(cli, ["decimal", "-a", "100", "--encode"], input=plain)
+    assert result.output == decimal + "\n"
+    assert result.exit_code == 0
+
+    result = runner.invoke(cli, ["decimal", "-a", "100", "--decode"], input=decimal)
+    assert result.output == plain
+    assert result.exit_code == 0
+
+    # test wrapping
+    result = runner.invoke(
+        cli, ["decimal", "-a", "100", "--encode", "-w", "5"], input=plain
+    )
+    assert result.output == "45 74\n81 81\n84 06\n"
+    assert result.exit_code == 0
+
+    result = runner.invoke(
+        cli, ["decimal", "-a", "letters", "--encode", "-w", "2"], input="ABC"
+    )
+    assert result.output == "00\n01\n02\n"
+    assert result.exit_code == 0
+
+
+@pytest.mark.parametrize("alphabet_name,test_name,plain,decimal", load_decimal_cases())
+def test_encode_fixtures(alphabet_name, test_name, plain, decimal):
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        with open("plain.txt", "w") as f:
+            f.write(plain)
+        with open("decimal.txt", "w") as f:
+            f.write(decimal)
+
+        result = runner.invoke(
+            cli,
+            ["decimal", "-a", alphabet_name, "-e", "plain.txt"],
+            catch_exceptions=False,
+        )
+
+        # normalize text wrapping so fixture doesn't need to exactly match
+        # newlines of output
+        wrapped = textwrap.fill(decimal, width=60) + "\n"
+
+        assert result.output == wrapped
+        assert result.exit_code == 0
+
+        result = runner.invoke(
+            cli,
+            ["decimal", "-a", alphabet_name, "-d", "decimal.txt"],
+            catch_exceptions=False,
+        )
+
+        # hack to handle passthrough chars + newline behavior
+        if alphabet_name == "letters":
+            expected_plain = plain.replace(" ", "") + "\n"
+        elif alphabet_name == "printable":
+            expected_plain = plain.replace("\n", "") + "\n"
+        else:
+            expected_plain = plain
+
+        assert result.output == expected_plain
+        assert result.exit_code == 0

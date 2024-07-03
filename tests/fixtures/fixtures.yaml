@@ -73,10 +73,16 @@ cases:
         yo?@y%dt+[i==D kxINOSSu$C*V&e&!HAL[-Izy|"jJ!
       key: |
         E'Y@(/z1?['JML1k2YUOh](3O*f/ 3!SXf[@g  |=zbr
+      plaintext_decimal: |
+        52 72 69 00 81 85 73 67 75 00 66 82 79 87 78 00 70 79 88 00
+        74 85 77 80 83 00 79 86 69 82 00 84 72 69 00 76 65 90 89 00
+        68 79 71 14
     noop:
       plaintext:  "The quick brown fox..."
       ciphertext: "The quick brown fox..."
       key:        "                      "
+      plaintext_decimal: |
+        52 72 69 00 81 85 73 67 75 00 66 82 79 87 78 00 70 79 88 14 14 14
 
     case-fox-insecure:
       insecure: true
@@ -104,6 +110,7 @@ cases:
       plaintext:  "ATTACKING TONIGHT"
       key:        "OCULORHINOLARINGOLOGY"
       ciphertext: "OVNLQBPVT HZNZOUZ"
+      plaintext_decimal: "00 19 19 00 02 10 08 13 06 19 14 13 08 06 07 19"
     noop:
       plaintext:   "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG..."
       key:         "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
