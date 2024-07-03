@@ -6,6 +6,7 @@ import strictyaml
 
 from vigenere.cipher import Cipher
 from vigenere.errors import CipherError, CLIError, InputError
+from vigenere.alphabet import ALPHABET_PRINTABLE
 
 
 fixtures_dir = Path(__file__).parent.parent / "fixtures"
@@ -20,8 +21,8 @@ def test_cipher_init(mocker):
     fixtures = load_fixtures()
     fixtures["cases"]["printable"]["case-fox"]
 
-    c = Cipher(key="abc")
-    assert c.alphabet.name == "printable"  # default
+    c = Cipher(key="abc", alphabet=ALPHABET_PRINTABLE)
+    assert c.alphabet.name == "printable"
     assert c.key == "abc"
 
     with pytest.raises(InputError, match="Cannot pass both key and key_file"):
@@ -30,7 +31,7 @@ def test_cipher_init(mocker):
     with pytest.raises(CLIError):
         Cipher(batch=True)
 
-    c = Cipher(key_file=io.StringIO("foobar"))
+    c = Cipher(key_file=io.StringIO("foobar"), alphabet=ALPHABET_PRINTABLE)
     assert c.key == "foobar"
 
     with pytest.raises(InputError, match="Empty key"):
@@ -42,7 +43,7 @@ def test_cipher_init(mocker):
 
 def test_init_interactive_mocked(mocker):
     stub = mocker.patch("vigenere.cipher.pwinput", return_value="somekey")
-    c = Cipher()
+    c = Cipher(alphabet_name="printable")
     assert stub.call_args_list == [mocker.call("Key: ")]
     assert c.key == "somekey"
 
@@ -74,7 +75,7 @@ def test_all_fixtures(alphabet_name, test_name, key, plain, ciphertext, insecure
 
 
 def test_character_errors():
-    c = Cipher(key="WXYZ")
+    c = Cipher(key="WXYZ", alphabet_name="printable")
 
     with pytest.raises(InputError, match="Must provide text"):
         c.encrypt(text=None)
@@ -97,7 +98,7 @@ def test_character_errors():
     with pytest.raises(
         CipherError, match="Invalid character for alphabet 'printable' in key"
     ):
-        badkey = Cipher(key="\xbfyo?")
+        badkey = Cipher(key="\xbfyo?", alphabet_name="printable")
         badkey.encrypt("omg")
 
     with pytest.raises(

@@ -2,7 +2,7 @@ import itertools
 import operator
 from typing import Callable, Iterator, Optional, TextIO
 
-from .alphabet import get_alphabet
+from .alphabet import Alphabet, get_alphabet
 from .errors import CipherError, InputError
 from .pwinput import pwinput
 
@@ -13,7 +13,8 @@ class Cipher:
         key: Optional[str] = None,
         key_file: Optional[TextIO] = None,
         batch: bool = False,
-        alphabet_name: str = "printable",
+        alphabet: Optional[Alphabet] = None,
+        alphabet_name: Optional[str] = None,
         insecure_allow_broken_short_key: bool = False,
         max_key_size: int = 1024 * 1024,
         wrap_decimal_width: int | None = 60,
@@ -44,7 +45,21 @@ class Cipher:
         if not key:
             raise InputError("Empty key")
 
-        self.alphabet = get_alphabet(name=alphabet_name)
+        # Set alphabet directly or by name
+        if alphabet:
+            if alphabet_name:
+                raise InputError("Cannot pass both alphabet and alphabet_name")
+
+            if not isinstance(alphabet, Alphabet):
+                raise InputError(f"Expected Alphabet instance, got {alphabet!r}")
+
+            self.alphabet = alphabet
+
+        else:
+            if not alphabet_name:
+                raise InputError("Must pass alphabet or alphabet_name")
+
+            self.alphabet = get_alphabet(name=alphabet_name)
 
         # remove passthrough chars and possibly convert from decimal
         self.key = self.alphabet.prepare_key(key)

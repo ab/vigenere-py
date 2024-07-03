@@ -336,7 +336,7 @@ Known alphabets:
       100-char full ASCII, ciphertext written as digits
       aliases: (100)
       passthrough: none
-      chars: ␀␉␊␌␍ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+      chars: ␀␉␊␌␍ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 
   printable:
       All printable characters and spaces
@@ -424,5 +424,5 @@ def test_alphabet():
     assert result.exit_code == 0
 
     result = runner.invoke(cli, ["alphabet", "nonexistent"])
-    assert result.output.startswith("Alphabet not found")
+    assert "Error: Alphabet not found: 'nonexistent'" in result.output
     assert result.exit_code == 1

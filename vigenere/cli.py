@@ -156,7 +156,7 @@ def encrypt(
         c = Cipher(
             key_file=key_file,
             batch=batch,
-            alphabet_name=alphabet,
+            alphabet=alphabet,
             insecure_allow_broken_short_key=insecure,
         )
     except CLIError as err:
@@ -197,7 +197,7 @@ def decrypt(
     input: Optional[TextIO],
     key_file: Optional[TextIO],
     output: Optional[TextIO],
-    alphabet: str,
+    alphabet: Alphabet,
     batch: bool,
     insecure: bool,
 ) -> None:
@@ -220,7 +220,7 @@ def decrypt(
         c = Cipher(
             key_file=key_file,
             batch=batch,
-            alphabet_name=alphabet,
+            alphabet=alphabet,
             insecure_allow_broken_short_key=insecure,
         )
     except CLIError as err:
