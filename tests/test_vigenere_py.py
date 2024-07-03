@@ -332,24 +332,34 @@ def test_alphabet_list():
         result.output.strip()
         == """
 Known alphabets:
+  decimal:
+      100-char full ASCII, ciphertext written as digits
+      aliases: (100)
+      passthrough: none
+      chars: ␀␉␊␌␍ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+
   printable:
-      All printable characters except tabs
+      All printable characters and spaces
       aliases: (ascii)
+      passthrough: other whitespace
       chars:  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 
   letters:
       Uppercase letters only
       aliases: (upper|uppercase)
+      passthrough: punctuation/whitespace
       chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
   alpha-mixed:
       Mixed case letters and numbers
       aliases: (alpha|alphanumeric|alphanumeric-mixed)
+      passthrough: punctuation/whitespace
       chars: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
 
   alpha-upper:
       Uppercase letters and numbers
       aliases: (alphanumeric-upper)
+      passthrough: punctuation/whitespace
       chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 """.strip()  # noqa: E501
     )
@@ -361,7 +371,8 @@ Known alphabets:
         == "\n".join(
             [
                 "name,description,aliases",
-                "printable,All printable characters except tabs,ascii",
+                'decimal,"100-char full ASCII, ciphertext written as digits",100',
+                "printable,All printable characters and spaces,ascii",
                 "letters,Uppercase letters only,upper|uppercase",
                 "alpha-mixed,Mixed case letters and numbers,alpha|alphanumeric|alphanumeric-mixed",  # noqa: E501
                 "alpha-upper,Uppercase letters and numbers,alphanumeric-upper",
@@ -376,7 +387,8 @@ Known alphabets:
         result.output
         == "\n".join(
             [
-                "printable\tAll printable characters except tabs\tascii",
+                "decimal\t100-char full ASCII, ciphertext written as digits\t100",
+                "printable\tAll printable characters and spaces\tascii",
                 "letters\tUppercase letters only\tupper|uppercase",
                 "alpha-mixed\tMixed case letters and numbers\talpha|alphanumeric|alphanumeric-mixed",  # noqa: E501
                 "alpha-upper\tUppercase letters and numbers\talphanumeric-upper",
