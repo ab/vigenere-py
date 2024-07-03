@@ -45,7 +45,7 @@ def cli() -> None:
     """
     Vigenère cipher encryption for Python.
 
-    The cipher alphabet of possible characters may be set by -a/--alphabet or
+    The cipher alphabet of possible characters must be set by -a/--alphabet or
     by env var VIGENERE_ALPHABET. (See `vigenere alphabet` for list.)
 
     Run `vigenere COMMAND --help` for more info on each command.
@@ -60,6 +60,20 @@ def validate_alphabet(
     Alphabet. Prints error/usage message if no alphabet is found with that
     name.
     """
+
+    if value == ALPHABET_UNSET:
+        # click.echo(ctx.get_help(), err=True)
+        click.echo(
+            "\n".join(
+                [
+                    "Error: Must set option -a/--alphabet or env var VIGENERE_ALPHABET",
+                    "\nKnown alphabets: " + ", ".join(ALPHABETS.keys()),
+                    "(See `vigenere alphabets` for more info)",
+                ]
+            ),
+            err=True,
+        )
+        ctx.exit(1)
 
     try:
         return get_alphabet(name=value)
@@ -85,13 +99,16 @@ def validate_alphabet_optional(
     return validate_alphabet(ctx=ctx, param=param, value=value)
 
 
+ALPHABET_UNSET = "<unset>"
+
+
 # Alphabet option is used by several commands
 _alphabet_option = click.option(
     "-a",
     "--alphabet",
     help="Cipher alphabet, if not set by VIGENERE_ALPHABET",
     metavar="ALPHABET",
-    default="printable",
+    default=ALPHABET_UNSET,
     envvar="VIGENERE_ALPHABET",
     callback=validate_alphabet,
 )
@@ -308,9 +325,11 @@ def alphabet(
     table: bool = False,
 ) -> None:
     """
-    Print characters in the given alphabet.
+    Print helpful info about supported alphabets.
 
-    Or, if no label is given, list all known alphabet names.
+    If a single alphabet is given, print the characters in that alphabet.
+
+    Or, if no label is given, print details about all known alphabets.
     """
 
     if csv_out:

@@ -114,7 +114,17 @@ def test_decrypt_fixtures(alphabet_name, test_name, key, plain, ciphertext, inse
         assert result.exit_code == 0
 
 
-def test_encrypt_defaults():
+@pytest.mark.parametrize("args", [["enc"], ["dec"], ["keygen", "5"]])
+def test_alphabet_defaults(args: list[str]) -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(cli, args)
+
+    assert "Error: Must set option -a/--alphabet" in result.output
+    assert result.exit_code == 1
+
+
+def test_encrypt_env():
     fixture = load_fixtures()["cases"]["printable"]["case-fox"]
 
     runner = CliRunner()
@@ -128,27 +138,31 @@ def test_encrypt_defaults():
         with open("key.txt", "w") as f:
             f.write(key)
 
+        env = {"VIGENERE_ALPHABET": "printable"}
+
         result = runner.invoke(
             cli,
             ["enc", "-k", "key.txt", "plain.txt"],
             catch_exceptions=False,
+            env=env,
         )
         assert result.output == ciphertext
 
         result = runner.invoke(
             cli,
             ["enc", "-k", "key.txt", "-o", "out.txt", "plain.txt"],
+            env=env,
         )
         assert result.output == ""
         assert open("out.txt").read() == ciphertext
         assert result.exit_code == 0
 
-        result = runner.invoke(cli, ["enc", "-k", "key.txt"], input=plaintext)
+        result = runner.invoke(cli, ["enc", "-k", "key.txt"], input=plaintext, env=env)
         assert result.output == ciphertext
         assert result.exit_code == 0
 
 
-def test_decrypt_defaults():
+def test_decrypt_env():
     fixture = load_fixtures()["cases"]["printable"]["case-fox"]
 
     runner = CliRunner()
@@ -158,10 +172,13 @@ def test_decrypt_defaults():
         with open("key.txt", "w") as f:
             f.write(fixture["key"])
 
+        env = {"VIGENERE_ALPHABET": "printable"}
+
         result = runner.invoke(
             cli,
             ["dec", "-k", "key.txt", "cipher.txt"],
             catch_exceptions=False,
+            env=env,
         )
         assert result.output == fixture["plaintext"]
         assert result.exit_code == 0
@@ -170,6 +187,7 @@ def test_decrypt_defaults():
             cli,
             ["dec", "-k", "key.txt", "-o", "out.txt", "cipher.txt"],
             catch_exceptions=False,
+            env=env,
         )
         assert result.output == ""
         assert open("out.txt").read() == fixture["plaintext"]
@@ -180,6 +198,7 @@ def test_decrypt_defaults():
             ["dec", "-k", "key.txt"],
             input=fixture["ciphertext"],
             catch_exceptions=False,
+            env=env,
         )
         assert result.output == fixture["plaintext"]
         assert result.exit_code == 0
@@ -309,7 +328,14 @@ def test_decrypt_errors():
 
 def test_keygen():
     runner = CliRunner()
+
     result = runner.invoke(cli, ["keygen", "10"])
+    assert "Must set option -a/--alphabet" in result.output
+    assert result.exit_code == 1
+
+    result = runner.invoke(
+        cli, ["keygen", "10"], env={"VIGENERE_ALPHABET": "printable"}
+    )
     assert len(result.output.rstrip("\n")) == 10
     assert result.exit_code == 0
 
@@ -334,7 +360,7 @@ def test_keygen():
         assert len(key) == 20
         assert all(c in letters_set for c in key.strip())
 
-    result = runner.invoke(cli, ["keygen", "-f", "yaml", "10"])
+    result = runner.invoke(cli, ["keygen", "-f", "yaml", "-a", "printable", "10"])
     assert result.output.startswith("key: ")
     assert len(result.output) > 10
     assert result.exit_code == 0
@@ -460,6 +486,10 @@ def test_decimal():
     runner = CliRunner()
 
     result = runner.invoke(cli, ["decimal"])
+    assert "Must set option -a/--alphabet" in result.output
+    assert result.exit_code == 1
+
+    result = runner.invoke(cli, ["decimal", "-a", "100"])
     assert "Must set mode -e or -d" in result.output
     assert result.exit_code == 1
 
