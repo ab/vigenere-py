@@ -1,33 +1,23 @@
-# Copyright (c) 2021 Al Sweigart
-# Copyright (c) 2023 Andy Brody
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 """
-Adapted from pwinput, by Al Sweigart
+Utilities to get a password, while echoing a mask asterisk for each char.
 
-A cross-platform Python module that displays **** for password input.
+GetPassError - This exception is raised if we fail to set up the terminal to
+               avoid echoing the password contentx.
+
+On Windows, the msvcrt module will be used.
+
+This is a derived work that incorporates portions of CPython Lib/getpass.py,
+used under the Python Software Foundation License Version 2.
+
+Copyright (c) 2001-2024 Python Software Foundation
+Copyright (c) 2024 Andy Brody
 """
-
 
 import sys
 from typing import List
+
+
+__all__ = ["getpass_masked","GetPassError"]
 
 
 def pwinput(prompt: str = "Password: ", mask: str = "•") -> str:
@@ -36,14 +26,10 @@ def pwinput(prompt: str = "Password: ", mask: str = "•") -> str:
     keystroke.
     """
 
-    if not isinstance(prompt, str):
-        raise TypeError(
-            "prompt argument must be a str, not %s" % (type(prompt).__name__)
-        )
     if not isinstance(mask, str):
-        raise TypeError("mask argument must be a str, not %s" % (type(prompt).__name__))
+        raise TypeError("mask must be a str, got {mask!r}")
     if len(mask) > 1:
-        raise ValueError("mask argument must be a zero- or one-character str")
+        raise ValueError("mask must be a zero- or one-character str")
 
     if mask == "" or sys.stdin is not sys.__stdin__ or not sys.stdin.isatty():
         # Just use getpass if a mask is not needed.
@@ -61,21 +47,30 @@ def pwinput(prompt: str = "Password: ", mask: str = "•") -> str:
     while True:
         key = ord(term_getchar(strip_escapes=True))
 
-        if key == 13 or key == 4:
+        if key == 3:
+            # ^C pressed
+            raise KeyboardInterrupt
+
+        elif key == 13 or key == 4:
             # enter key or ^D pressed
             sys.stdout.write("\n")
             return "".join(enteredPassword)
-        elif key in (8, 127):  # Backspace/Del key erases previous output.
+
+        # ASCII chars BS(8) or DEL(128) are backspace.
+        # In Linux terminals, typically 
+        elif key in (8, 127):
             if len(enteredPassword) > 0:
                 # Erase previous character
                 # Print \b to move cursor, overwrite with space, then \b again
                 sys.stdout.write("\b \b")
                 sys.stdout.flush()
                 enteredPassword = enteredPassword[:-1]
+
         elif 0 <= key <= 31:
             # Do nothing for unprintable characters.
             # We ignore arrow keys, home, end, etc.
             pass
+
         else:
             # Key is part of the password; display the mask character.
             char = chr(key)
@@ -113,14 +108,11 @@ def unix_term_getchar(strip_escapes: bool = True) -> str:
     ch: str = getch()
 
     while True:
-        # handle ^C
-        if ch == "\x03":
-            raise KeyboardInterrupt
-
+        # if we're not stripping escapes out, then return anything raw
         if not strip_escapes:
             return ch
 
-        # All C0 control codes except for ^C we return as is
+        # All C0 control codes we return as is
 
         # When strip_escapes is set, we remove ANSI escape sequences starting
         # with ^[ (ESC)
