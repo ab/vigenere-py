@@ -4,7 +4,7 @@
 [![Changelog](https://img.shields.io/github/v/release/ab/vigenere-py?include_prereleases&label=changelog)](https://github.com/ab/vigenere-py/releases)
 [![Tests](https://github.com/ab/vigenere-py/workflows/Test/badge.svg)](https://github.com/ab/vigenere-py/actions?query=workflow%3ATest)
 [![Codecov](https://img.shields.io/codecov/c/github/ab/vigenere-py)](https://app.codecov.io/github/ab/vigenere-py)
-[![License](https://img.shields.io/github/license/ab/vigenere-py)](https://github.com/ab/vigenere-py/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/ab/vigenere-py)](https://github.com/ab/vigenere-py/blob/main/LICENSE)
 
 This is a Python implementation of the
 [Vigenère cipher](https://en.wikipedia.org/wiki/Vigen%C3%A8re_cipher), where
